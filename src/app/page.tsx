@@ -1,13 +1,5 @@
-'use client';
-
-import Head from 'next/head';
-import * as React from 'react';
+import Image from 'next/image';
 import '@/lib/env';
-
-import ArrowLink from '@/components/links/ArrowLink';
-import ButtonLink from '@/components/links/ButtonLink';
-import UnderlineLink from '@/components/links/UnderlineLink';
-import UnstyledLink from '@/components/links/UnstyledLink';
 
 /**
  * SVGR Support
@@ -16,57 +8,92 @@ import UnstyledLink from '@/components/links/UnstyledLink';
  * You can override the next-env if the type is important to you
  * @see https://stackoverflow.com/questions/68103844/how-to-override-next-js-svg-module-declaration
  */
-import Logo from '~/svg/Logo.svg';
+import Logo from '~/svg/logo.svg';
 
-// !STARTERCONF -> Select !STARTERCONF and CMD + SHIFT + F
-// Before you begin editing, follow all comments with `STARTERCONF`,
-// to customize the default configuration.
+const greetings = {
+  morning: 'Guten Morgen! Willkommen bei Café Flora.',
+  noon: 'Mittagspause im Café Flora!',
+  afternoon: 'Schönen Nachmittag! Kaffeezeit im Café Flora.',
+  evening: 'Guten Abend! Willkommen bei Café Flora.',
+};
+
+const getGreeting = () => {
+  const currentHour = new Date().getHours();
+
+  if (currentHour < 11) {
+    return greetings.morning;
+  }
+  if (currentHour < 14) {
+    return greetings.noon;
+  }
+  if (currentHour < 17) {
+    return greetings.afternoon;
+  }
+  return greetings.evening;
+};
 
 export default function HomePage() {
   return (
-    <main>
-      <Head>
-        <title>Hi</title>
-      </Head>
-      <section className='bg-white'>
-        <div className='layout relative flex min-h-screen flex-col items-center justify-center py-12 text-center'>
-          <Logo className='w-16' />
-          <h1 className='mt-4'>Next.js + Tailwind CSS + TypeScript Starter</h1>
-          <p className='mt-2 text-sm text-gray-800'>
-            A starter for Next.js, Tailwind CSS, and TypeScript with Absolute
-            Import, Seo, Link component, pre-configured with Husky{' '}
-          </p>
-          <p className='mt-2 text-sm text-gray-700'>
-            <ArrowLink href='https://github.com/theodorusclarence/ts-nextjs-tailwind-starter'>
-              See the repository
-            </ArrowLink>
-          </p>
-
-          <ButtonLink className='mt-6' href='/components' variant='light'>
-            See all components
-          </ButtonLink>
-
-          <UnstyledLink
-            href='https://vercel.com/new/git/external?repository-url=https%3A%2F%2Fgithub.com%2Ftheodorusclarence%2Fts-nextjs-tailwind-starter'
-            className='mt-4'
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              width='92'
-              height='32'
-              src='https://vercel.com/button'
-              alt='Deploy with Vercel'
-            />
-          </UnstyledLink>
-
-          <footer className='absolute bottom-2 text-gray-700'>
-            © {new Date().getFullYear()} By{' '}
-            <UnderlineLink href='https://theodorusclarence.com?ref=tsnextstarter'>
-              Theodorus Clarence
-            </UnderlineLink>
-          </footer>
+    <main className="bg-[url('/svg/flora.svg')] bg-fixed bg-[length:500px] size-full">
+      <nav>
+        <ul>
+          <li>
+            <a href='/#start'>Start</a>
+          </li>
+          <li>
+            <a href='/#karte'>Karte</a>
+          </li>
+          <li>
+            <a href='/#infos'>Karte</a>
+          </li>
+        </ul>
+      </nav>
+      <section id='start' className='bg-white'>
+        <div>
+          <Logo className='w-24 h-24 mx-auto' />
+          <Image
+            width={300}
+            height={300}
+            alt='Café Flora | Osnabrück | Espresso | Kaffee | Flat White | Paninis | Quiche'
+            src='/images/start-placeholder.webp'
+          />
+          <div>{getGreeting()}</div>
         </div>
       </section>
+      <section id='karte'>
+        <div>
+          <h2>Unsere Karte</h2>
+          <a href='/karte'>Als PDF</a>
+          <a href='/karte-google'>Bei Google Maps</a>
+        </div>
+      </section>
+      <section id='infos'>
+        <div>
+          <h2>Wann wir für dich öffnen</h2>
+        </div>
+        <div>
+          <h2>Wo du uns findest</h2>
+        </div>
+      </section>
+      <section id='instagram'>
+        <h2>Folge uns auf Insta!</h2>
+      </section>
+      <footer className='absolute bottom-2 text-gray-700'>
+        {/* © {new Date().getFullYear()} By{" "}
+						<UnderlineLink href="https://theodorusclarence.com?ref=tsnextstarter">
+							Theodorus Clarence
+						</UnderlineLink> */}
+        <section id='kontakt'>
+          <h2>Kontakt</h2>
+        </section>
+        <section>
+          <h2>Öffnungszeiten</h2>
+        </section>
+        <section id='impressum'>
+          <h2>Folge uns</h2>
+          <a href='/impressum'>Impressum | Datenschutz</a>
+        </section>
+      </footer>
     </main>
   );
 }

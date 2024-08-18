@@ -1,11 +1,10 @@
 'use client'; // Error components must be Client Components
-
 import * as React from 'react';
 import { RiAlarmWarningFill } from 'react-icons/ri';
 
 import TextButton from '@/components/buttons/TextButton';
 
-export default function Error({
+export default function ErrorPage({
   error,
   reset,
 }: {
@@ -26,10 +25,10 @@ export default function Error({
             className='drop-shadow-glow animate-flicker text-red-500'
           />
           <h1 className='mt-8 text-4xl md:text-6xl'>
-            Oops, something went wrong!
+            Ups! Da ist etwas schief gelaufen...
           </h1>
           <TextButton variant='basic' onClick={reset} className='mt-4'>
-            Try again
+            Bitte versuche es erneut
           </TextButton>
         </div>
       </section>
