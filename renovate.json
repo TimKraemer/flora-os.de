@@ -1,9 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended", "group:all"],
-  "updatePinnedDependencies": false,
-  "stabilityDays": 2,
+  "schedule": ["before 11am on Monday"],
   "separateMajorMinor": true,
-  "timezone": "Asia/Jakarta",
-  "schedule": ["before 11am on Monday"]
+  "stabilityDays": 2,
+  "timezone": "Europe/Berlin",
+  "updatePinnedDependencies": false
 }
