@@ -10,11 +10,13 @@ async function fetchOpeningTimes({ setError, setOpeningTimes }) {
 		if (response.ok) {
 			setOpeningTimes(data);
 		} else {
-			setError(data.error || "Error fetching opening times");
+			setError(
+				data.error || "Unsere Öffnungszeiten findest du auf Google Maps",
+			);
 		}
 	} catch (err) {
 		console.error(err);
-		setError("Failed to fetch opening times");
+		setError("Unsere Öffnungszeiten findest du auf Google Maps");
 	}
 }
 
@@ -41,7 +43,7 @@ export default function OpeningTimes() {
 								{isToday ? (
 									<>
 										{dayOfWeekInGerman} (<strong>Heute</strong>):{" "}
-										{day.split(":")[1]}
+										{day.split(":").slice(1).join(":")}
 									</>
 								) : (
 									day
