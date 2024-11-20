@@ -13,7 +13,7 @@ COPY package.json pnpm-lock.yaml* ./
 # COPY .yarn/releases ./.yarn/releases
 
 RUN \
-    if [ -f yarn.lock ]; then yarn install --immutable; \
+    if [ -f pnpm-lock.yaml ]; then pnpm i --frozen-lockfile; \
     else echo "Lockfile not found." && exit 1; \
     fi
 
