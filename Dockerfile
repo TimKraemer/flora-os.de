@@ -9,8 +9,8 @@ RUN apt-get update && apt-get --yes install git
 FROM git AS deps
 WORKDIR /app
 RUN corepack enable && corepack prepare yarn@stable --activate && yarn set version stable
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .yarnrc.yml ./
-COPY .yarn/releases ./.yarn/releases
+COPY package.json pnpm-lock.yaml* ./
+# COPY .yarn/releases ./.yarn/releases
 
 RUN \
     if [ -f yarn.lock ]; then yarn install --immutable; \
