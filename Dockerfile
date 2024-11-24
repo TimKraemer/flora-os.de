@@ -5,12 +5,10 @@ WORKDIR /app
 # install git
 RUN apt-get update && apt-get --yes install git
 
-# Stage 2: yarn deps
+# Stage 2: pnpm deps
 FROM git AS deps
 WORKDIR /app
-RUN corepack enable && corepack prepare yarn@stable --activate && yarn set version stable
 COPY package.json pnpm-lock.yaml* ./
-# COPY .yarn/releases ./.yarn/releases
 
 RUN \
     if [ -f pnpm-lock.yaml ]; then pnpm i --frozen-lockfile; \
@@ -21,9 +19,6 @@ RUN \
 FROM git AS builder
 WORKDIR /app
 
-# Enable Corepack and set the desired Yarn version
-RUN corepack enable && corepack prepare yarn@stable --activate && yarn set version stable
-
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -32,7 +27,7 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN yarn build
+RUN pnpm build
 
 # Production image, copy all the files and run next
 FROM node:lts-bullseye-slim AS runner
