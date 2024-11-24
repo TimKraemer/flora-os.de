@@ -8,6 +8,10 @@ RUN apt-get update && apt-get --yes install git
 # Stage 2: pnpm deps
 FROM git AS deps
 WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
 COPY package.json pnpm-lock.yaml* ./
 
 RUN \
