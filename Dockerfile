@@ -23,6 +23,9 @@ RUN \
 FROM git AS builder
 WORKDIR /app
 
+# Install pnpm
+RUN npm install -g pnpm
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
