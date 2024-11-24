@@ -19,10 +19,6 @@ RUN \
     else echo "Lockfile not found." && exit 1; \
     fi
 
-# Stage 3: Mounting .env.production
-FROM git AS mounter
-WORKDIR /app
-
 # Rebuild the source code only when needed
 FROM git AS builder
 WORKDIR /app
@@ -32,9 +28,6 @@ RUN npm install -g pnpm
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Copy the .env.production file from the mounted directory
-COPY --from=mounter /app/.env.production .
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
