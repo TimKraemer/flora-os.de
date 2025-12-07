@@ -9,14 +9,17 @@ RUN apt-get update && apt-get --yes install git
 FROM git AS deps
 WORKDIR /app
 
-# Install Bun
-RUN curl -fsSL https://bun.sh/install | bash
+# Install Bun and set PATH
+RUN curl -fsSL https://bun.sh/install | bash && \
+    export PATH="/root/.bun/bin:${PATH}" && \
+    bun --version
+
 ENV PATH="/root/.bun/bin:${PATH}"
 
 COPY package.json bun.lock* ./
 
 RUN \
-    if [ -f bun.lock ]; then bun install --frozen-lockfile; \
+    if [ -f bun.lock ]; then /root/.bun/bin/bun install --frozen-lockfile; \
     else echo "Lockfile not found." && exit 1; \
     fi
 
@@ -24,8 +27,11 @@ RUN \
 FROM git AS builder
 WORKDIR /app
 
-# Install Bun
-RUN curl -fsSL https://bun.sh/install | bash
+# Install Bun and set PATH
+RUN curl -fsSL https://bun.sh/install | bash && \
+    export PATH="/root/.bun/bin:${PATH}" && \
+    bun --version
+
 ENV PATH="/root/.bun/bin:${PATH}"
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -36,7 +42,7 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN bun run build
+RUN /root/.bun/bin/bun run build
 
 # Production image, copy all the files and run next
 FROM node:lts-bullseye-slim AS runner
