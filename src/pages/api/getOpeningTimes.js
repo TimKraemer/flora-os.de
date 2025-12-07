@@ -5,7 +5,7 @@ const cache = {};
 // Cache expiration time in milliseconds (e.g., 10 minutes)
 const CACHE_EXPIRATION_TIME = 10 * 60 * 1000; // 10 minutes
 
-export default async function handler(req, res) {
+export default async function handler(_req, res) {
   try {
     // Extract the placeId from environment variables
     const placeId = process.env.GOOGLE_PLACE_ID;
