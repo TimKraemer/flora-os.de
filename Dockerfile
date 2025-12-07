@@ -5,17 +5,18 @@ WORKDIR /app
 # install git
 RUN apt-get update && apt-get --yes install git
 
-# Stage 2: pnpm deps
+# Stage 2: bun deps
 FROM git AS deps
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install Bun
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
 
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json bun.lock* ./
 
 RUN \
-    if [ -f pnpm-lock.yaml ]; then pnpm i --frozen-lockfile; \
+    if [ -f bun.lock ]; then bun install --frozen-lockfile; \
     else echo "Lockfile not found." && exit 1; \
     fi
 
@@ -23,8 +24,9 @@ RUN \
 FROM git AS builder
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install Bun
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -34,7 +36,7 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN pnpm build
+RUN bun run build
 
 # Production image, copy all the files and run next
 FROM node:lts-bullseye-slim AS runner
