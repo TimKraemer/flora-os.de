@@ -9,10 +9,11 @@ RUN apt-get update && apt-get --yes install git
 FROM git AS deps
 WORKDIR /app
 
-# Install Bun and set PATH
-RUN curl -fsSL https://bun.sh/install | bash && \
-    export PATH="/root/.bun/bin:${PATH}" && \
-    bun --version
+# Install curl and Bun
+RUN apt-get update && apt-get install -y --no-install-recommends curl unzip && \
+    curl -fsSL https://bun.sh/install | bash && \
+    /root/.bun/bin/bun --version && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV PATH="/root/.bun/bin:${PATH}"
 
@@ -27,15 +28,16 @@ RUN \
 FROM git AS builder
 WORKDIR /app
 
-# Install Bun and set PATH
-RUN curl -fsSL https://bun.sh/install | bash && \
-    export PATH="/root/.bun/bin:${PATH}" && \
-    bun --version
+# Install curl and Bun
+RUN apt-get update && apt-get install -y --no-install-recommends curl unzip && \
+    curl -fsSL https://bun.sh/install | bash && \
+    /root/.bun/bin/bun --version && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV PATH="/root/.bun/bin:${PATH}"
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY --chown=nextjs:nodejs . .
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
