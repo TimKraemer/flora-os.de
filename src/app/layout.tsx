@@ -69,6 +69,8 @@ export const metadata: Metadata = {
     apple: '/favicon/apple-touch-icon.png',
   },
   formatDetection: { telephone: false },
+  // Eigentumsnachweis für die Google Search Console (Property https://flora-os.de/)
+  verification: { google: 'hajXLwBaJctEkJMKzAc_WHkN7ci_CkuleT9fbHQivhE' },
   other: { 'geo.region': 'DE-NI', 'geo.placename': site.address.city },
 };
 
