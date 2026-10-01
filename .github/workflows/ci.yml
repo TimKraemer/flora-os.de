@@ -1,0 +1,103 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Ein laufender Deploy wird nie abgebrochen; ältere wartende Läufe ersetzt
+# GitHub durch den neuesten. PR-Läufe dürfen sich gegenseitig abbrechen.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  IMAGE: ghcr.io/timkraemer/flora-os.de
+
+jobs:
+  check:
+    name: Lint, Typen, Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun run test
+
+  image:
+    name: Docker-Image
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: vars
+        run: echo "tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=${{ github.sha }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy auf scortex-vm
+    needs: image
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://flora-os.de
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: SSH-Zugang einrichten
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      # Der Schlüssel darf auf dem Server nur /opt/services/flora/deploy.sh
+      # ausführen. Das Token dieses Laufs (nur Leserecht auf Packages) geht
+      # über stdin, damit der Server das Image ziehen kann.
+      - name: Rollout ohne Unterbrechung
+        run: >
+          printf '%s' "${{ secrets.GITHUB_TOKEN }}" |
+          ssh -o IdentitiesOnly=yes -o BatchMode=yes
+          "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}"
+          deploy ${{ needs.image.outputs.tag }}
+
+      - name: Produktion erreichbar?
+        run: |
+          for url in https://flora-os.de/api/health https://flora-os.de/ https://flora-os.de/llms.txt; do
+            curl -fsS --retry 5 --retry-delay 3 -o /dev/null -w "$url → %{http_code}\n" "$url"
+          done
