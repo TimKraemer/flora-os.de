@@ -3,7 +3,12 @@ import { mkdir, readdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 import { site } from '@/lib/site';
-import { fetchPublicProfile, type RawPost } from './api';
+import {
+  fetchPublicProfile,
+  type PublicProfile,
+  parseProfile,
+  type RawPost,
+} from './api';
 import {
   feedFile,
   instagramDir,
@@ -22,6 +27,9 @@ const MAX_BACKOFF_MS = 6 * 60 * 60 * 1000;
 
 type SyncState = { failures: number; nextAttemptAt: string };
 const stateFile = () => path.join(instagramDir(), 'state.json');
+/** Profildaten, die der Relay (docker-box zu Hause) per SSH abliefert */
+export const relayFile = () => path.join(instagramDir(), 'relay.json');
+const RELAY_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
 /**
  * Nach Fehlschlägen (meist HTTP 429, Instagram drosselt) immer länger warten:
@@ -132,50 +140,87 @@ export function syncInstagram() {
   return running;
 }
 
+const username = () =>
+  process.env.INSTAGRAM_USERNAME || site.instagram.username;
+
+/** Bilder holen, feed.json schreiben, Altes löschen */
+async function buildFeed(profile: PublicProfile): Promise<InstagramFeed> {
+  const posts = (
+    await Promise.all(profile.posts.slice(0, POST_LIMIT).map(toLocal))
+  ).filter((m) => m !== null);
+  if (posts.length === 0) throw new Error('keine Beiträge erhalten');
+
+  let picture: string | undefined;
+  if (profile.picture) {
+    // Der Pfad bleibt gleich, solange das Profilbild gleich bleibt; die Query (Signatur) nicht.
+    const key = hash(new URL(profile.picture).pathname).slice(0, 12);
+    picture = (await storeImage(profile.picture, `profile-${key}`)).thumb;
+  }
+
+  const feed: InstagramFeed = {
+    updatedAt: new Date().toISOString(),
+    profile: {
+      username: profile.username,
+      name: profile.name,
+      picture,
+      followers: profile.followers,
+      mediaCount: profile.mediaCount,
+    },
+    posts,
+  };
+  await writeJsonAtomic(feedFile(), feed);
+  await prune(feed);
+  return feed;
+}
+
+/**
+ * Ausweg, wenn Instagram den Server drosselt: Ein Rechner an einem privaten
+ * Anschluss holt die Profildaten und legt sie als relay.json ab
+ * (deploy/instagram-relay.sh). Die Bilder lädt der Server weiter selbst vom
+ * Instagram-CDN, das ist nicht gedrosselt.
+ */
+async function fromRelay(): Promise<InstagramFeed | null> {
+  const [info, current] = await Promise.all([
+    stat(relayFile()).catch(() => null),
+    readFeed(),
+  ]);
+  if (!info || Date.now() - info.mtimeMs > RELAY_MAX_AGE_MS) return current;
+  // Schon verarbeitet oder direkt neuer abgerufen
+  if (current && Date.parse(current.updatedAt) >= info.mtimeMs) return current;
+
+  try {
+    const profile = parseProfile(await readJson(relayFile()));
+    if (profile.username !== username()) {
+      throw new Error(`falsches Profil ${profile.username}`);
+    }
+    const feed = await buildFeed(profile);
+    console.info(
+      `Instagram: ${feed.posts.length} Beiträge über den Relay aktualisiert`
+    );
+    return feed;
+  } catch (error) {
+    console.error('Instagram: Relay-Daten nicht verwendbar', String(error));
+    return current;
+  }
+}
+
 async function run(): Promise<InstagramFeed | null> {
   await mkdir(mediaDir(), { recursive: true });
   const state = await readJson<SyncState>(stateFile());
-  if (state && Date.parse(state.nextAttemptAt) > Date.now()) return readFeed();
+  if (state && Date.parse(state.nextAttemptAt) > Date.now()) return fromRelay();
 
   try {
-    const profile = await fetchPublicProfile(
-      process.env.INSTAGRAM_USERNAME || site.instagram.username
-    );
-    const posts = (
-      await Promise.all(profile.posts.slice(0, POST_LIMIT).map(toLocal))
-    ).filter((m) => m !== null);
-    if (posts.length === 0) throw new Error('keine Beiträge erhalten');
-
-    let picture: string | undefined;
-    if (profile.picture) {
-      // Der Pfad bleibt gleich, solange das Profilbild gleich bleibt; die Query (Signatur) nicht.
-      const key = hash(new URL(profile.picture).pathname).slice(0, 12);
-      picture = (await storeImage(profile.picture, `profile-${key}`)).thumb;
-    }
-
-    const feed: InstagramFeed = {
-      updatedAt: new Date().toISOString(),
-      profile: {
-        username: profile.username,
-        name: profile.name,
-        picture,
-        followers: profile.followers,
-        mediaCount: profile.mediaCount,
-      },
-      posts,
-    };
-    await writeJsonAtomic(feedFile(), feed);
+    const feed = await buildFeed(await fetchPublicProfile(username()));
     await writeJsonAtomic(stateFile(), nextState(0));
-    await prune(feed);
-    console.info(`Instagram: ${posts.length} Beiträge aktualisiert`);
+    console.info(`Instagram: ${feed.posts.length} Beiträge aktualisiert`);
     return feed;
   } catch (error) {
     const next = nextState((state?.failures ?? 0) + 1);
     await writeJsonAtomic(stateFile(), next);
     console.error(
-      `Instagram: Abgleich fehlgeschlagen, letzter Stand bleibt, nächster Versuch ${next.nextAttemptAt}`,
+      `Instagram: direkter Abruf fehlgeschlagen, nächster Versuch ${next.nextAttemptAt}`,
       String(error)
     );
-    return readFeed();
+    return fromRelay();
   }
 }

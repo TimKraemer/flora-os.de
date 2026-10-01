@@ -43,6 +43,14 @@ höchstens 6 h), weil Instagram häufiges Nachfragen mit längeren Sperren
 `data/instagram/state.json`. Die Anpassung an Änderungen bei Instagram steckt
 in `src/lib/instagram/api.ts`.
 
+Weil Instagram den Hetzner-Server immer wieder drosselt, gibt es einen Relay:
+`deploy/instagram-relay.sh` läuft auf docker-box (Telekom-Anschluss, per cron
+alle zwei Stunden), holt nur die Profildaten und liefert sie per SSH an
+`/opt/services/flora/instagram-inbox.sh`. Der Schlüssel `~/.ssh/flora_relay`
+darf auf dem Server nur dieses Skript ausführen. Die Website nimmt
+`data/instagram/relay.json`, wenn der direkte Abruf scheitert, und lädt die
+Bilder weiter selbst.
+
 Stories gibt Instagram nur an eingeloggte Nutzer heraus, deshalb fehlen sie.
 
 ## KI und Suchmaschinen
