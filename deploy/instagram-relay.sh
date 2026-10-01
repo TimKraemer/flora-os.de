@@ -8,6 +8,7 @@ set -euo pipefail
 USERNAME=cafe_flora_osnabrueck
 KEY=$HOME/.ssh/flora_relay
 TARGET=scortex@server.scortex.de
+PORT=47022
 
 body=$(mktemp)
 trap 'rm -f "$body"' EXIT
@@ -25,7 +26,7 @@ fi
 # sshd verwirft bei Scan-Wellen zufällig Verbindungen; Exit 255 = neu versuchen.
 for attempt in 1 2 3 4 5; do
 	code=0
-	ssh -T -i "$KEY" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=20 \
+	ssh -T -p "$PORT" -i "$KEY" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=20 \
 		"$TARGET" < "$body" || code=$?
 	[ "$code" -ne 255 ] && exit "$code"
 	sleep $((attempt * 15))

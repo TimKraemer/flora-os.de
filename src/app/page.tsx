@@ -1,7 +1,13 @@
 import { ArrowRight, BookOpen, ExternalLink } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Flower, MiniMap, Squiggle, Wave } from '@/components/Doodles';
+import {
+  Flower,
+  LampAndCup,
+  MiniMap,
+  Squiggle,
+  Wave,
+} from '@/components/Doodles';
 import { Greeting } from '@/components/Greeting';
 import { HeroCollage } from '@/components/HeroCollage';
 import { InstagramSection } from '@/components/instagram/InstagramSection';
@@ -235,33 +241,36 @@ export default async function HomePage() {
         <InstagramSection feed={feed} />
       </div>
 
-      {/* FAQ als Sprechblasen */}
+      {/* FAQ als Sprechblasen, daneben die Pilzlampe aus dem Café */}
       <section
         id='faq'
         aria-labelledby='faq-title'
-        className='reveal mx-auto mt-24 max-w-6xl px-5'
+        className='reveal mx-auto mt-24 grid max-w-6xl items-center gap-10 px-5 lg:grid-cols-[1fr_2fr]'
       >
-        <p className='kicker'>Häufige Fragen</p>
-        <h2
-          id='faq-title'
-          className='section-title mb-10 flex items-center gap-3'
-        >
-          Gut zu wissen
-          <Flower className='size-8 text-berry' />
-        </h2>
-        <dl className='grid gap-6 md:grid-cols-2'>
-          {faq.map((f, i) => (
-            <div
-              key={f.q}
-              className={`relative rounded-3xl bg-cream p-6 shadow-[var(--shadow-paper)] after:absolute after:-bottom-2.5 after:size-5 after:rotate-45 after:bg-cream ${i % 2 ? 'after:right-10' : 'after:left-10'}`}
-            >
-              <dt className='font-display text-xl font-semibold text-primary'>
-                {f.q}
-              </dt>
-              <dd className='mt-2 leading-relaxed'>{f.a}</dd>
-            </div>
-          ))}
-        </dl>
+        <LampAndCup className='mx-auto w-full max-w-xs lg:max-w-sm' />
+        <div>
+          <p className='kicker'>Häufige Fragen</p>
+          <h2
+            id='faq-title'
+            className='section-title mb-10 flex items-center gap-3'
+          >
+            Gut zu wissen
+            <Flower className='size-8 text-berry' />
+          </h2>
+          <dl className='grid gap-6 md:grid-cols-2'>
+            {faq.map((f, i) => (
+              <div
+                key={f.q}
+                className={`relative rounded-3xl bg-cream p-6 shadow-[var(--shadow-paper)] after:absolute after:-bottom-2.5 after:size-5 after:rotate-45 after:bg-cream ${i % 2 ? 'after:right-10' : 'after:left-10'}`}
+              >
+                <dt className='font-display text-xl font-semibold text-primary'>
+                  {f.q}
+                </dt>
+                <dd className='mt-2 leading-relaxed'>{f.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       </section>
     </>
   );

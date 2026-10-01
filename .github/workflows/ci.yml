@@ -95,12 +95,13 @@ jobs:
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+          PORT: ${{ secrets.DEPLOY_PORT }}
           TAG: ${{ needs.image.outputs.tag }}
         run: |
           for attempt in 1 2 3 4 5; do
             code=0
             printf '%s' "$TOKEN" |
-              ssh -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=20 \
+              ssh -p "${PORT:-22}" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=20 \
                 "$TARGET" deploy "$TAG" || code=$?
             [ "$code" -ne 255 ] && exit "$code"
             echo "SSH-Verbindung abgebrochen, Versuch $attempt"
