@@ -1,6 +1,7 @@
 import type { InstagramFeed } from './instagram/types';
+import { formatPrice, menu } from './menu';
 import { groupByDay, type Period } from './opening-hours';
-import { faq, fullAddress, menuHighlights, site } from './site';
+import { faq, fullAddress, site } from './site';
 
 function hoursBlock(periods: Period[] | null) {
   if (!periods?.length) {
@@ -34,8 +35,9 @@ ${hoursBlock(periods)}
 ## Seiten
 
 - [Startseite](${site.url}/): Karte, Öffnungszeiten, Anfahrt, aktuelle Instagram-Beiträge und häufige Fragen
-- [Speisekarte (PDF)](${site.url}${site.menuPdf}): vollständige Getränke- und Speisekarte mit Preisen
-- [Ausführliche Fassung für KI-Assistenten](${site.url}/llms-full.txt): Karte als Text, FAQ und neueste Instagram-Beiträge
+- [Speisekarte](${site.url}/speisekarte): alle Getränke und Speisen mit Preisen
+- [Speisekarte (PDF)](${site.url}${site.menuPdf}): dieselbe Karte zum Ausdrucken
+- [Ausführliche Fassung für KI-Assistenten](${site.url}/llms-full.txt): Karte mit Preisen, FAQ und neueste Instagram-Beiträge
 
 ## Weitere Quellen
 
@@ -53,8 +55,16 @@ export function llmsFullTxt(
   periods: Period[] | null,
   feed: InstagramFeed | null
 ) {
-  const menu = menuHighlights
-    .map((g) => `### ${g.title}\n\n${g.items.map((i) => `- ${i}`).join('\n')}`)
+  const menuText = menu
+    .map(
+      (section) =>
+        `### ${section.title}\n\n${section.items
+          .map((item) => {
+            const extras = [item.size, item.diet].filter(Boolean).join(', ');
+            return `- ${item.name}: ${formatPrice(item.price)}${extras ? ` (${extras})` : ''}${item.description ? `. ${item.description}` : ''}`;
+          })
+          .join('\n')}${section.note ? `\n\n${section.note}` : ''}`
+    )
     .join('\n\n');
 
   const questions = faq.map((f) => `### ${f.q}\n\n${f.a}`).join('\n\n');
@@ -91,11 +101,11 @@ export function llmsFullTxt(
 
 ${hoursBlock(periods)}
 
-## Auf der Karte (Auszug, ohne Preise)
+## Speisekarte
 
-Die vollständige Karte mit Preisen steht als PDF unter ${site.url}${site.menuPdf}. Kaffee, Chai, Matcha und Smoothies gibt es auch mit Oatly-Hafermilch.
+Preise in Euro inklusive Mehrwertsteuer. Als Webseite: ${site.url}/speisekarte, als PDF: ${site.url}${site.menuPdf}. Kaffee und Smoothies gibt es auch mit Oatly-Hafermilch.
 
-${menu}
+${menuText}
 
 ## Häufige Fragen
 

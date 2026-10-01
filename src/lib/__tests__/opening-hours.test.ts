@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'bun:test';
-import { groupByDay, parsePeriods, toSchema } from '../opening-hours';
+import {
+  groupByDay,
+  openStatus,
+  parsePeriods,
+  toSchema,
+} from '../opening-hours';
 
 // Ausschnitt einer echten Antwort der Places API (Dienstag geschlossen).
 const response = {
@@ -45,5 +50,30 @@ describe('Öffnungszeiten', () => {
 
   test('lehnt unerwartete Antworten ab', () => {
     expect(() => parsePeriods({ status: 'REQUEST_DENIED' })).toThrow();
+  });
+});
+
+describe('Öffnungsstatus', () => {
+  const periods = parsePeriods(response);
+  // 2026-09-28 ist ein Montag; Sommerzeit, also UTC+2.
+  const at = (iso: string) => openStatus(periods, new Date(iso)).label;
+
+  test('geöffnet', () => {
+    expect(at('2026-09-28T10:00:00+02:00')).toBe(
+      'Jetzt geöffnet bis 18:00 Uhr'
+    );
+  });
+  test('vor Öffnung', () => {
+    expect(at('2026-09-28T08:00:00+02:00')).toBe('Heute ab 09:30 Uhr geöffnet');
+  });
+  test('nach Feierabend mit Ruhetag dazwischen', () => {
+    expect(at('2026-09-28T19:00:00+02:00')).toBe(
+      'Geschlossen, Mittwoch ab 09:30 Uhr'
+    );
+  });
+  test('Ruhetag, morgen wieder offen', () => {
+    expect(at('2026-09-29T12:00:00+02:00')).toBe(
+      'Geschlossen, morgen ab 09:30 Uhr'
+    );
   });
 });

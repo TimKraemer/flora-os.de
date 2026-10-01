@@ -29,81 +29,6 @@ export const site = {
 
 export const fullAddress = `${site.address.street}, ${site.address.postalCode} ${site.address.city}`;
 
-/** Auszug aus der Speisekarte ohne Preise; maßgeblich ist die PDF. */
-export const menuHighlights = [
-  {
-    title: 'Kaffee',
-    items: [
-      'Espresso und Doppio',
-      'Cappuccino',
-      'Flat White',
-      'Americano',
-      'Latte Macchiato',
-      'Kaffee Crema',
-      'Milchkaffee',
-      'French Press',
-      'Schokmok',
-    ],
-  },
-  {
-    title: 'Kalt',
-    items: [
-      'Iced Latte',
-      'Affogato',
-      'Eiskaffee',
-      'Eisschokolade',
-      'Iced Matcha Latte',
-      'Iced Matcha Berry Latte',
-      'Iced Chai Latte',
-    ],
-  },
-  {
-    title: 'Tee und mehr',
-    items: [
-      'Chai Latte',
-      'Matcha Latte',
-      'Frischer Minztee',
-      'Milky Oolong',
-      'Heiße Schokolade',
-      'Ingwershot',
-    ],
-  },
-  {
-    title: 'Smoothies und Limos',
-    items: [
-      'Gelber Smoothie (Mango, Ananas)',
-      'Roter Smoothie (Beeren, Banane)',
-      'Bananenmilch',
-      'Lütts',
-      'Fritz-Limonaden',
-    ],
-  },
-  {
-    title: 'Essen',
-    items: [
-      'Bananenbrot nach Hausrezept',
-      'Croissant',
-      'Laugenbrezel',
-      'Obstsalat mit Granola',
-      'Kuchen als Tagesangebot',
-      'Bagels (vegan möglich)',
-      'Panini Tomate Mozzarella',
-      'Tagessuppe',
-    ],
-  },
-  {
-    title: 'Aperitif und Bier',
-    items: [
-      'Espresso Martini',
-      'Aperol Spritz',
-      'Sarti Spritz',
-      'Secco',
-      'Pülleken',
-      'alkoholfreies Bier',
-    ],
-  },
-] as const;
-
 export const faq = [
   {
     q: 'Wo ist das Café Flora?',
@@ -111,7 +36,7 @@ export const faq = [
   },
   {
     q: 'Gibt es vegane Optionen?',
-    a: 'Ja. Die Bagels gibt es auf Wunsch vegan, und Kaffee, Chai, Matcha und Smoothies bekommst du mit Oatly-Hafermilch.',
+    a: 'Ja. Bananenbrot, Laugenbrezel und Obstsalat sind vegan, die Bagels gibt es auf Wunsch vegan, und Kaffee und Smoothies bekommst du mit Oatly-Hafermilch.',
   },
   {
     q: 'Kann ich einen Tisch reservieren?',

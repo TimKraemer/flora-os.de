@@ -130,9 +130,9 @@ export default function Datenschutz() {
 
       <h2>8. Schriftarten</h2>
       <p>
-        Wir verwenden die Schrift Figtree. Sie ist auf unserem Server
-        gespeichert und wird nicht von Google Fonts oder einem anderen externen
-        Dienst geladen.
+        Wir verwenden die Schriften Fraunces und Figtree. Beide sind auf unserem
+        Server gespeichert und werden nicht von Google Fonts oder einem anderen
+        externen Dienst geladen.
       </p>
 
       <h2>9. Verschlüsselung</h2>

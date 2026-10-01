@@ -20,8 +20,8 @@ bun run dev
 
 | Was | Wo |
 | --- | --- |
-| Adresse, Telefon, E-Mail, Karten-Auszug, FAQ | `src/lib/site.ts` |
-| Speisekarte | `public/Speisekarte.pdf` ersetzen, Auszug in `site.ts` anpassen |
+| Adresse, Telefon, E-Mail, FAQ | `src/lib/site.ts` |
+| Speisekarte mit Preisen (Seite `/speisekarte`, Startseite, llms-full.txt) | `src/lib/menu.ts`, dazu `public/Speisekarte.pdf` und die Karte im Google-Unternehmensprofil |
 | Öffnungszeiten | kommen aus Google Maps (Google-Unternehmensprofil pflegen) |
 | Impressum, Datenschutz | `src/app/impressum/page.tsx`, `src/app/datenschutz/page.tsx` |
 

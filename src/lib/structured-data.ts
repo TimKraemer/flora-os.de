@@ -16,8 +16,8 @@ export function cafeSchema(periods: Period[] | null): Graph {
     email: site.email,
     priceRange: site.priceRange,
     servesCuisine: ['Kaffee', 'Kuchen', 'Frühstück', 'Snacks'],
-    menu: `${site.url}${site.menuPdf}`,
-    hasMenu: `${site.url}${site.menuPdf}`,
+    menu: `${site.url}/speisekarte`,
+    hasMenu: `${site.url}/speisekarte`,
     address: {
       '@type': 'PostalAddress',
       streetAddress: site.address.street,
