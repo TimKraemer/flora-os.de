@@ -25,7 +25,7 @@ fi
 # sshd verwirft bei Scan-Wellen zufällig Verbindungen; Exit 255 = neu versuchen.
 for attempt in 1 2 3 4 5; do
 	code=0
-	ssh -i "$KEY" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=20 \
+	ssh -T -i "$KEY" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=20 \
 		"$TARGET" < "$body" || code=$?
 	[ "$code" -ne 255 ] && exit "$code"
 	sleep $((attempt * 15))
