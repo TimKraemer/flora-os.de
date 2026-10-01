@@ -1,71 +1,15 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-import {
-  fetchPosts,
-  fetchProfile,
-  fetchStories,
-  type RawMedia,
-  refreshToken,
-} from './api';
-import {
-  feedFile,
-  instagramDir,
-  mediaDir,
-  readFeed,
-  readJson,
-  writeJsonAtomic,
-} from './store';
+import { site } from '@/lib/site';
+import { fetchPublicProfile, type RawPost } from './api';
+import { feedFile, mediaDir, readFeed, writeJsonAtomic } from './store';
 import type { InstagramFeed, InstagramMedia } from './types';
 
 export const POST_LIMIT = 8;
-const REFRESH_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
-const MAX_VIDEO_BYTES = 40 * 1024 * 1024;
-
-type TokenFile = { accessToken: string; refreshedAt: string; seed: string };
 
 const hash = (s: string) => createHash('sha256').update(s).digest('hex');
-const tokenFile = () => path.join(instagramDir(), 'token.json');
-
-/**
- * Liefert das aktuelle Token. Das Token aus der Umgebung dient nur als
- * Startwert: der Server verlängert es selbst und merkt sich das neue in
- * token.json. Wird in der Umgebung ein anderes Token eingetragen, gilt wieder
- * dieses.
- */
-async function currentToken(): Promise<string | null> {
-  const envToken = process.env.INSTAGRAM_ACCESS_TOKEN?.trim();
-  const stored = await readJson<TokenFile>(tokenFile());
-
-  let state: TokenFile | null = stored;
-  if (envToken && stored?.seed !== hash(envToken)) {
-    state = {
-      accessToken: envToken,
-      refreshedAt: new Date(0).toISOString(),
-      seed: hash(envToken),
-    };
-    await writeJsonAtomic(tokenFile(), state);
-  }
-  if (!state) return null;
-
-  if (Date.now() - Date.parse(state.refreshedAt) > REFRESH_AFTER_MS) {
-    try {
-      const fresh = await refreshToken(state.accessToken);
-      state = {
-        ...state,
-        accessToken: fresh.access_token,
-        refreshedAt: new Date().toISOString(),
-      };
-      await writeJsonAtomic(tokenFile(), state);
-      console.info('Instagram: Token verlängert');
-    } catch (error) {
-      // Frisch ausgestellte Tokens lassen sich erst nach 24 h verlängern.
-      console.warn('Instagram: Token nicht verlängert', String(error));
-    }
-  }
-  return state.accessToken;
-}
 
 async function exists(file: string) {
   try {
@@ -84,7 +28,7 @@ async function download(url: string, maxBytes = 15 * 1024 * 1024) {
   return Buffer.from(await res.arrayBuffer());
 }
 
-/** Bild von Meta holen und als WebP in zwei Größen ablegen (1080 und 640 px). */
+/** Bild holen und als WebP in zwei Größen ablegen (1080 und 640 px). */
 async function storeImage(url: string, name: string) {
   const full = `${name}.webp`;
   const thumb = `${name}-640.webp`;
@@ -104,56 +48,36 @@ async function storeImage(url: string, name: string) {
   return { image: full, thumb };
 }
 
-async function storeVideo(url: string, name: string) {
-  const file = `${name}.mp4`;
-  const target = path.join(mediaDir(), file);
-  if (!(await exists(target))) {
-    await writeFile(target, await download(url, MAX_VIDEO_BYTES));
-  }
-  return file;
-}
-
-export function mediaKind(m: RawMedia): InstagramMedia['kind'] {
-  if (m.media_type === 'VIDEO') return 'video';
-  if (m.media_type === 'CAROUSEL_ALBUM') return 'album';
+export function mediaKind(post: RawPost): InstagramMedia['kind'] {
+  if (post.__typename === 'GraphVideo') return 'video';
+  if (post.__typename === 'GraphSidecar') return 'album';
   return 'image';
 }
 
-/** Bei Videos ist media_url das MP4, das Standbild steht in thumbnail_url. */
-export function stillUrl(m: RawMedia) {
-  return m.media_type === 'VIDEO'
-    ? (m.thumbnail_url ?? m.media_url)
-    : (m.media_url ?? m.thumbnail_url);
+export function toMedia(
+  post: RawPost
+): Omit<InstagramMedia, 'image' | 'thumb'> {
+  return {
+    id: post.id,
+    kind: mediaKind(post),
+    caption: post.edge_media_to_caption.edges[0]?.node.text.trim() ?? '',
+    alt: post.accessibility_caption ?? '',
+    permalink: `https://www.instagram.com/p/${post.shortcode}/`,
+    timestamp: new Date(post.taken_at_timestamp * 1000).toISOString(),
+  };
 }
 
-async function toLocal(
-  m: RawMedia,
-  withVideo: boolean
-): Promise<InstagramMedia | null> {
-  const still = stillUrl(m);
+async function toLocal(post: RawPost): Promise<InstagramMedia | null> {
   try {
-    let video: string | undefined;
-    if (withVideo && m.media_type === 'VIDEO' && m.media_url) {
-      video = await storeVideo(m.media_url, m.id);
-    }
-    // Story-Videos haben nicht immer ein Standbild; dann bleibt nur das Video.
-    const images = still
-      ? await storeImage(still, m.id)
-      : video
-        ? { image: '', thumb: '' }
-        : null;
-    if (!images) return null;
     return {
-      id: m.id,
-      kind: mediaKind(m),
-      caption: m.caption?.trim() ?? '',
-      permalink: m.permalink ?? '',
-      timestamp: m.timestamp,
-      ...images,
-      video,
+      ...toMedia(post),
+      ...(await storeImage(post.display_url, post.id)),
     };
   } catch (error) {
-    console.warn(`Instagram: Medium ${m.id} übersprungen`, String(error));
+    console.warn(
+      `Instagram: Beitrag ${post.shortcode} übersprungen`,
+      String(error)
+    );
     return null;
   }
 }
@@ -161,9 +85,7 @@ async function toLocal(
 /** Entfernt Dateien, die zu keinem aktuellen Beitrag mehr gehören. */
 async function prune(feed: InstagramFeed) {
   const keep = new Set<string>();
-  for (const m of [...feed.posts, ...feed.stories]) {
-    for (const f of [m.image, m.thumb, m.video]) if (f) keep.add(f);
-  }
+  for (const m of feed.posts) keep.add(m.image).add(m.thumb);
   if (feed.profile.picture) keep.add(feed.profile.picture);
   for (const file of await readdir(mediaDir())) {
     if (!keep.has(file)) await rm(path.join(mediaDir(), file), { force: true });
@@ -173,8 +95,8 @@ async function prune(feed: InstagramFeed) {
 let running: Promise<InstagramFeed | null> | null = null;
 
 /**
- * Holt Profil, die letzten Beiträge und aktuelle Stories und legt alles lokal
- * ab. Besucher laden Bilder danach nur noch von flora-os.de, nie von Meta.
+ * Holt Profil und die letzten Beiträge und legt alles lokal ab. Besucher
+ * laden Bilder danach nur noch von flora-os.de, nie von Instagram.
  */
 export function syncInstagram() {
   running ??= run().finally(() => {
@@ -184,60 +106,43 @@ export function syncInstagram() {
 }
 
 async function run(): Promise<InstagramFeed | null> {
-  const token = await currentToken();
-  if (!token) return null;
   await mkdir(mediaDir(), { recursive: true });
-
   try {
-    const [profile, rawPosts] = await Promise.all([
-      fetchProfile(token),
-      fetchPosts(token, POST_LIMIT),
-    ]);
-    // Stories sind nur bei Business-Konten abrufbar; ein Fehler darf den Feed nicht aufhalten.
-    const rawStories = await fetchStories(token).catch((error) => {
-      console.warn('Instagram: Stories nicht abrufbar', String(error));
-      return [];
-    });
-
+    const profile = await fetchPublicProfile(
+      process.env.INSTAGRAM_USERNAME || site.instagram.username
+    );
     const posts = (
-      await Promise.all(rawPosts.map((m) => toLocal(m, false)))
+      await Promise.all(profile.posts.slice(0, POST_LIMIT).map(toLocal))
     ).filter((m) => m !== null);
-    const stories = (
-      await Promise.all(rawStories.map((m) => toLocal(m, true)))
-    ).filter((m) => m !== null);
+    if (posts.length === 0) throw new Error('keine Beiträge erhalten');
 
     let picture: string | undefined;
-    if (profile.profile_picture_url) {
+    if (profile.picture) {
       // Der Pfad bleibt gleich, solange das Profilbild gleich bleibt; die Query (Signatur) nicht.
-      const key = hash(new URL(profile.profile_picture_url).pathname).slice(
-        0,
-        12
-      );
-      picture = (
-        await storeImage(profile.profile_picture_url, `profile-${key}`)
-      ).thumb;
+      const key = hash(new URL(profile.picture).pathname).slice(0, 12);
+      picture = (await storeImage(profile.picture, `profile-${key}`)).thumb;
     }
 
     const feed: InstagramFeed = {
       updatedAt: new Date().toISOString(),
       profile: {
         username: profile.username,
-        name: profile.name ?? profile.username,
+        name: profile.name,
         picture,
-        followers: profile.followers_count,
-        mediaCount: profile.media_count,
+        followers: profile.followers,
+        mediaCount: profile.mediaCount,
       },
       posts,
-      stories,
     };
     await writeJsonAtomic(feedFile(), feed);
     await prune(feed);
-    console.info(
-      `Instagram: ${posts.length} Beiträge, ${stories.length} Stories aktualisiert`
-    );
+    console.info(`Instagram: ${posts.length} Beiträge aktualisiert`);
     return feed;
   } catch (error) {
-    console.error('Instagram: Abgleich fehlgeschlagen', String(error));
+    console.error(
+      'Instagram: Abgleich fehlgeschlagen, letzter Stand bleibt',
+      String(error)
+    );
     return readFeed();
   }
 }

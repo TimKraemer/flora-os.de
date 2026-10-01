@@ -76,13 +76,14 @@ export default function Datenschutz() {
         gesetzlichen Aufbewahrungspflichten entgegenstehen.
       </p>
 
-      <h2>5. Instagram-Beiträge und Stories auf dieser Website</h2>
+      <h2>5. Instagram-Beiträge auf dieser Website</h2>
       <p>
-        Auf der Startseite zeigen wir die neuesten Beiträge und Stories aus
-        unserem Instagram-Konto @{site.instagram.username}. Unser Server ruft
-        sie über die offizielle Schnittstelle von Meta ab und speichert Kopien
-        der Bilder und Videos. Ihr Browser lädt diese Kopien ausschließlich von
-        flora-os.de. Dabei werden keine Daten von Ihnen an Meta übermittelt.
+        Auf der Startseite zeigen wir die neuesten Beiträge aus unserem
+        öffentlichen Instagram-Konto @{site.instagram.username}. Unser Server
+        ruft dafür regelmäßig die öffentlich sichtbaren Profildaten ab und
+        speichert Kopien der Bilder und Texte. Ihr Browser lädt diese Kopien
+        ausschließlich von flora-os.de. Dabei werden keine Daten von Ihnen an
+        Instagram oder Meta übermittelt.
       </p>
       <p>
         Erst wenn Sie auf einen Beitrag oder den Button „Folgen“ klicken, öffnet

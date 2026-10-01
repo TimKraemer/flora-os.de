@@ -2,7 +2,6 @@ import { Images, Play } from 'lucide-react';
 import { InstagramIcon } from '@/components/InstagramIcon';
 import type { InstagramFeed, InstagramMedia } from '@/lib/instagram/types';
 import { site } from '@/lib/site';
-import { StoryRing } from './StoryViewer';
 
 export const mediaUrl = (file: string) => `/instagram/media/${file}`;
 
@@ -26,7 +25,8 @@ function PostTile({
 }) {
   const alt = post.caption
     ? `Instagram-Beitrag: ${excerpt(post.caption)}`
-    : `Instagram-Beitrag vom ${dateFormat.format(new Date(post.timestamp))}`;
+    : post.alt ||
+      `Instagram-Beitrag vom ${dateFormat.format(new Date(post.timestamp))}`;
   return (
     <li>
       <a
@@ -75,14 +75,12 @@ export function InstagramSection({ feed }: { feed: InstagramFeed | null }) {
 
       <div className='mb-6 flex flex-wrap items-center gap-4'>
         {profile?.picture && (
-          <StoryRing
-            picture={mediaUrl(profile.picture)}
-            stories={(feed?.stories ?? []).map((s) => ({
-              id: s.id,
-              image: s.image ? mediaUrl(s.image) : undefined,
-              video: s.video ? mediaUrl(s.video) : undefined,
-              timestamp: s.timestamp,
-            }))}
+          <img
+            src={mediaUrl(profile.picture)}
+            alt='Profilbild von Café Flora'
+            width={64}
+            height={64}
+            className='size-16 shrink-0 rounded-full border-2 border-white object-cover'
           />
         )}
         <div className='min-w-0 flex-1'>

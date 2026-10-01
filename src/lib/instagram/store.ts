@@ -9,7 +9,7 @@ export const instagramDir = () =>
   );
 export const mediaDir = () => path.join(instagramDir(), 'media');
 
-export const MEDIA_FILE = /^[\w-]+\.(webp|mp4)$/;
+export const MEDIA_FILE = /^[\w-]+\.webp$/;
 
 export async function readJson<T>(file: string): Promise<T | null> {
   try {

@@ -1,106 +1,105 @@
 import { z } from 'zod';
 
-export const GRAPH = 'https://graph.instagram.com';
-export const VERSION = 'v25.0';
+/**
+ * Öffentliches Profil über die Schnittstelle, die auch die Instagram-App
+ * nutzt. Braucht keinen Login und kein Token, liefert aber nur, was jeder
+ * Besucher von instagram.com sieht: Profil und die letzten 12 Beiträge.
+ * Stories zeigt Instagram nur eingeloggten Nutzern.
+ *
+ * Inoffiziell: Instagram kann Aufbau oder Zugang jederzeit ändern. Dann
+ * schlägt der Abgleich fehl und die Website zeigt den letzten Stand weiter.
+ */
+const SOURCES: { url: string; headers: Record<string, string> }[] = [
+  {
+    url: 'https://i.instagram.com/api/v1/users/web_profile_info/',
+    headers: {
+      'User-Agent':
+        'Instagram 361.0.0.46.88 Android (34/14; 480dpi; 1080x2400; samsung; SM-S918B; dm3q; qcom; de_DE; 674675155)',
+      'x-ig-app-id': '567067343352427',
+    },
+  },
+  {
+    url: 'https://www.instagram.com/api/v1/users/web_profile_info/',
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+      'x-ig-app-id': '936619743392459',
+      'x-requested-with': 'XMLHttpRequest',
+    },
+  },
+];
 
-export const rawMediaSchema = z.object({
+const nodeSchema = z.object({
   id: z.string(),
-  media_type: z.enum(['IMAGE', 'VIDEO', 'CAROUSEL_ALBUM']),
-  media_url: z.string().url().optional(),
-  thumbnail_url: z.string().url().optional(),
-  permalink: z.string().url().optional(),
-  caption: z.string().optional(),
-  timestamp: z.string(),
+  shortcode: z.string(),
+  __typename: z.string(),
+  display_url: z.string().url(),
+  taken_at_timestamp: z.number(),
+  accessibility_caption: z.string().nullish(),
+  edge_media_to_caption: z.object({
+    edges: z.array(z.object({ node: z.object({ text: z.string() }) })),
+  }),
 });
-export type RawMedia = z.infer<typeof rawMediaSchema>;
-
-const listSchema = z.object({ data: z.array(z.unknown()) });
+export type RawPost = z.infer<typeof nodeSchema>;
 
 export const profileSchema = z.object({
-  username: z.string(),
-  name: z.string().optional(),
-  profile_picture_url: z.string().url().optional(),
-  followers_count: z.number().optional(),
-  media_count: z.number().optional(),
+  data: z.object({
+    user: z.object({
+      username: z.string(),
+      full_name: z.string().nullish(),
+      is_private: z.boolean().optional(),
+      profile_pic_url_hd: z.string().url().nullish(),
+      profile_pic_url: z.string().url().nullish(),
+      edge_followed_by: z.object({ count: z.number() }).optional(),
+      edge_owner_to_timeline_media: z.object({
+        count: z.number(),
+        edges: z.array(z.object({ node: z.unknown() })),
+      }),
+    }),
+  }),
 });
 
-const tokenSchema = z.object({
-  access_token: z.string(),
-  expires_in: z.number(),
-});
+export type PublicProfile = {
+  username: string;
+  name: string;
+  picture?: string;
+  followers?: number;
+  mediaCount: number;
+  posts: RawPost[];
+};
 
-const MEDIA_FIELDS =
-  'id,media_type,media_url,thumbnail_url,permalink,caption,timestamp';
-
-export class InstagramApiError extends Error {}
-
-async function get(url: URL) {
-  const res = await fetch(url, {
-    cache: 'no-store',
-    signal: AbortSignal.timeout(15000),
-  });
-  const body = await res.json().catch(() => null);
-  if (!res.ok) {
-    // Token nie mitloggen: nur Status und Meta-Fehlertext.
-    const message = body?.error?.message ?? res.statusText;
-    throw new InstagramApiError(`${url.pathname}: ${res.status} ${message}`);
-  }
-  return body;
-}
-
-function endpoint(pathname: string, token: string, params = {}) {
-  const url = new URL(`${GRAPH}/${VERSION}/${pathname}`);
-  url.search = new URLSearchParams({
-    ...params,
-    access_token: token,
-  }).toString();
-  return url;
-}
-
-/** Einträge ohne lesbares Bild (z. B. wegen Urheberrechtsmeldung) fallen raus. */
-function parseList(body: unknown): RawMedia[] {
-  return listSchema
-    .parse(body)
-    .data.flatMap((item) => {
-      const parsed = rawMediaSchema.safeParse(item);
+export function parseProfile(json: unknown): PublicProfile {
+  const user = profileSchema.parse(json).data.user;
+  if (user.is_private) throw new Error('Profil ist privat');
+  return {
+    username: user.username,
+    name: user.full_name || user.username,
+    picture: user.profile_pic_url_hd ?? user.profile_pic_url ?? undefined,
+    followers: user.edge_followed_by?.count,
+    mediaCount: user.edge_owner_to_timeline_media.count,
+    // Einzelne Beiträge mit unerwartetem Aufbau überspringen statt alles zu verwerfen.
+    posts: user.edge_owner_to_timeline_media.edges.flatMap(({ node }) => {
+      const parsed = nodeSchema.safeParse(node);
       return parsed.success ? [parsed.data] : [];
-    })
-    .filter((m) => m.media_url || m.thumbnail_url);
+    }),
+  };
 }
 
-export async function fetchProfile(token: string) {
-  return profileSchema.parse(
-    await get(
-      endpoint('me', token, {
-        fields: 'username,name,profile_picture_url,followers_count,media_count',
-      })
-    )
-  );
-}
-
-export async function fetchPosts(token: string, limit: number) {
-  return parseList(
-    await get(
-      endpoint('me/media', token, {
-        fields: MEDIA_FIELDS,
-        limit: String(limit),
-      })
-    )
-  );
-}
-
-export async function fetchStories(token: string) {
-  return parseList(
-    await get(endpoint('me/stories', token, { fields: MEDIA_FIELDS }))
-  );
-}
-
-/** Verlängert ein Long-Lived-Token um weitere 60 Tage (frühestens 24 h nach Ausstellung). */
-export async function refreshToken(token: string) {
-  const url = new URL(`${GRAPH}/refresh_access_token`);
-  url.search = new URLSearchParams({
-    grant_type: 'ig_refresh_token',
-    access_token: token,
-  }).toString();
-  return tokenSchema.parse(await get(url));
+export async function fetchPublicProfile(username: string) {
+  const errors: string[] = [];
+  for (const source of SOURCES) {
+    const url = `${source.url}?${new URLSearchParams({ username })}`;
+    try {
+      const res = await fetch(url, {
+        headers: { Accept: 'application/json', ...source.headers },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return parseProfile(await res.json());
+    } catch (error) {
+      errors.push(`${new URL(source.url).host}: ${String(error)}`);
+    }
+  }
+  throw new Error(`Profil nicht abrufbar (${errors.join('; ')})`);
 }

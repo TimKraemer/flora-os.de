@@ -47,7 +47,7 @@ export default function Impressum() {
 
       <h2>Bildnachweis</h2>
       <p>
-        Die Fotos und Videos im Instagram-Bereich stammen aus unserem eigenen
+        Die Fotos im Instagram-Bereich stammen aus unserem eigenen
         Instagram-Konto{' '}
         <a href={site.instagram.url} target='_blank' rel='noopener noreferrer'>
           @{site.instagram.username}

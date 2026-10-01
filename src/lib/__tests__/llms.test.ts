@@ -22,12 +22,12 @@ describe('llms.txt', () => {
     const text = llmsFullTxt(periods, {
       updatedAt: '2026-10-01T00:00:00Z',
       profile: { username: 'cafe_flora_osnabrueck', name: 'Café Flora' },
-      stories: [],
       posts: [
         {
           id: '1',
           kind: 'image',
           caption: 'Neuer Kuchen: Zitrone-Mohn',
+          alt: '',
           permalink: 'https://www.instagram.com/p/abc/',
           timestamp: '2026-09-30T08:00:00+0000',
           image: '1.webp',

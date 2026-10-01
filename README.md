@@ -27,24 +27,19 @@ bun run dev
 
 ## Instagram-Feed
 
-Der Server holt alle 15 Minuten Profil, die letzten 8 Beiträge und aktuelle
-Stories über die offizielle Instagram-API, wandelt die Bilder in WebP um und legt
-sie in `DATA_DIR/instagram` ab. Besucher bekommen nur diese Kopien zu sehen.
+Der Server holt alle 30 Minuten das öffentliche Profil von
+@cafe_flora_osnabrueck: Profilbild, Followerzahl und die letzten 8 Beiträge. Er
+wandelt die Bilder in WebP um und legt sie in `DATA_DIR/instagram` ab. Besucher
+bekommen nur diese Kopien zu sehen und verbinden sich nie mit Instagram.
 
-Einrichtung (einmalig):
+Dafür braucht es keinen Login, kein Token und kein Business-Konto. Der Abruf
+nutzt die öffentliche Profilschnittstelle der Instagram-App, so wie Elfsight
+und ähnliche Widgets. Sie ist nicht offiziell dokumentiert. Ändert Instagram
+etwas, schlägt der Abruf fehl (`docker compose logs` in `/opt/services/flora`
+zeigt „Instagram: Abgleich fehlgeschlagen“) und die Seite zeigt den letzten
+Stand weiter. Die Anpassung steckt dann in `src/lib/instagram/api.ts`.
 
-1. Das Instagram-Konto muss ein Business-Konto sein (Stories gibt die API nur für
-   Business-Konten heraus, Beiträge auch für Creator-Konten).
-2. Auf developers.facebook.com eine App vom Typ „Business“ anlegen und das Produkt
-   „Instagram“ mit „API setup with Instagram login“ hinzufügen.
-3. Unter „Generate access tokens“ das Konto `cafe_flora_osnabrueck` verbinden und
-   ein Token erzeugen. Für das eigene Konto braucht es keine App-Prüfung.
-4. Das Token als `INSTAGRAM_ACCESS_TOKEN` in `/opt/services/flora/.env.production`
-   eintragen und `bash /opt/services/flora/rollout.sh` ausführen.
-
-Das Token läuft nach 60 Tagen ab. Der Server verlängert es jede Woche selbst und
-speichert das neue in `data/instagram/token.json`. Ein neues Token in der
-Umgebung hat Vorrang vor dem gespeicherten.
+Stories gibt Instagram nur an eingeloggte Nutzer heraus, deshalb fehlen sie.
 
 ## KI und Suchmaschinen
 

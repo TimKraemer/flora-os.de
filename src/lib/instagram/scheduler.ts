@@ -1,13 +1,10 @@
 import { syncInstagram } from './sync';
 
-const INTERVAL_MS = 15 * 60 * 1000;
+/** Alle 30 Minuten reicht: neue Beiträge kommen selten, und Instagram drosselt häufige Abrufe. */
+const INTERVAL_MS = 30 * 60 * 1000;
 
-/** Abgleich beim Start und danach alle 15 Minuten (Stories leben nur 24 h). */
 export function startInstagramSync() {
-  if (!process.env.INSTAGRAM_ACCESS_TOKEN) {
-    console.info('Instagram: kein INSTAGRAM_ACCESS_TOKEN, Feed bleibt aus');
-    return;
-  }
+  if (process.env.INSTAGRAM_SYNC === 'off') return;
   const tick = () => {
     syncInstagram().catch((error) =>
       console.error('Instagram: Abgleich fehlgeschlagen', String(error))
