@@ -89,12 +89,24 @@ jobs:
       # Der Schlüssel darf auf dem Server nur /opt/services/flora/deploy.sh
       # ausführen. Das Token dieses Laufs (nur Leserecht auf Packages) geht
       # über stdin, damit der Server das Image ziehen kann.
+      # sshd verwirft bei vielen gleichzeitigen Scan-Verbindungen zufällig neue
+      # (MaxStartups). Exit 255 heißt Verbindungsfehler, dann neu versuchen.
       - name: Rollout ohne Unterbrechung
-        run: >
-          printf '%s' "${{ secrets.GITHUB_TOKEN }}" |
-          ssh -o IdentitiesOnly=yes -o BatchMode=yes
-          "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}"
-          deploy ${{ needs.image.outputs.tag }}
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+          TAG: ${{ needs.image.outputs.tag }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            code=0
+            printf '%s' "$TOKEN" |
+              ssh -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=20 \
+                "$TARGET" deploy "$TAG" || code=$?
+            [ "$code" -ne 255 ] && exit "$code"
+            echo "SSH-Verbindung abgebrochen, Versuch $attempt"
+            sleep $((attempt * 15))
+          done
+          exit 255
 
       - name: Produktion erreichbar?
         run: |

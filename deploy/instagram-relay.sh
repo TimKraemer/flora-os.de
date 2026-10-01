@@ -22,4 +22,13 @@ if [ "$status" != 200 ]; then
 	exit 1
 fi
 
-ssh -i "$KEY" -o IdentitiesOnly=yes -o BatchMode=yes "$TARGET" < "$body"
+# sshd verwirft bei Scan-Wellen zufällig Verbindungen; Exit 255 = neu versuchen.
+for attempt in 1 2 3 4 5; do
+	code=0
+	ssh -i "$KEY" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=20 \
+		"$TARGET" < "$body" || code=$?
+	[ "$code" -ne 255 ] && exit "$code"
+	sleep $((attempt * 15))
+done
+echo "$(date -Is) Server nicht erreichbar" >&2
+exit 255
