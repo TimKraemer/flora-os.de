@@ -15,7 +15,9 @@ import {
 import type { InstagramFeed, InstagramMedia } from './types';
 
 export const POST_LIMIT = 8;
-const INTERVAL_MS = 30 * 60 * 1000;
+/** Normaler Takt. Neue Beiträge kommen selten, seltenes Fragen hält Instagram ruhig. */
+const INTERVAL_MS = 2 * 60 * 60 * 1000;
+const BACKOFF_BASE_MS = 30 * 60 * 1000;
 const MAX_BACKOFF_MS = 6 * 60 * 60 * 1000;
 
 type SyncState = { failures: number; nextAttemptAt: string };
@@ -30,7 +32,7 @@ export function nextState(failures: number, now = Date.now()): SyncState {
   const wait =
     failures === 0
       ? INTERVAL_MS
-      : Math.min(INTERVAL_MS * 2 ** failures, MAX_BACKOFF_MS);
+      : Math.min(BACKOFF_BASE_MS * 2 ** failures, MAX_BACKOFF_MS);
   return { failures, nextAttemptAt: new Date(now + wait).toISOString() };
 }
 

@@ -81,7 +81,7 @@ describe('Backoff', () => {
   const wait = (failures: number) =>
     (Date.parse(nextState(failures, now).nextAttemptAt) - now) / 60_000;
 
-  test('wartet nach Erfolg 30 Minuten, nach Fehlern doppelt so lange, höchstens 6 h', () => {
-    expect([0, 1, 2, 3, 4, 9].map(wait)).toEqual([30, 60, 120, 240, 360, 360]);
+  test('wartet nach Erfolg 2 h, nach Fehlern 1, 2, 4 und höchstens 6 h', () => {
+    expect([0, 1, 2, 3, 4, 9].map(wait)).toEqual([120, 60, 120, 240, 360, 360]);
   });
 });

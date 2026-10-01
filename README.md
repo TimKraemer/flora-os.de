@@ -27,7 +27,7 @@ bun run dev
 
 ## Instagram-Feed
 
-Der Server holt alle 30 Minuten das öffentliche Profil von
+Der Server holt alle zwei Stunden das öffentliche Profil von
 @cafe_flora_osnabrueck: Profilbild, Followerzahl und die letzten 8 Beiträge. Er
 wandelt die Bilder in WebP um und legt sie in `DATA_DIR/instagram` ab. Besucher
 bekommen nur diese Kopien zu sehen und verbinden sich nie mit Instagram.
