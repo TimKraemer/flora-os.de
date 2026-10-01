@@ -29,8 +29,8 @@ export default async function HomePage() {
         </h1>
         <p className='mx-auto mt-3 max-w-2xl text-lg leading-relaxed'>
           Kaffee, Matcha und Chai, hausgemachtes Bananenbrot, Kuchen, Bagels,
-          Paninis und eine Tagessuppe. Du findest uns in der{' '}
-          {site.address.street}.
+          Paninis und eine Tagessuppe. Du findest uns im Katharinenviertel in
+          der {site.address.street}.
         </p>
       </section>
 
