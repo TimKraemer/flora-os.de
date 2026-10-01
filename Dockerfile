@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM oven/bun:1.3.3-slim AS bun
+FROM oven/bun:1.4.2-slim AS bun
 
 FROM node:24-slim AS deps
 WORKDIR /app
