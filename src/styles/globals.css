@@ -1,158 +1,70 @@
-@import url("https://use.typekit.net/dcz2bdn.css");
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  /* #region  /**=========== Primary Color =========== */
-  --tw-color-primary-50: 255 252 254;
-  --tw-color-primary-100: 255 252 254;
-  --tw-color-primary-200: 255 247 251;
-  --tw-color-primary-300: 252 240 245;
-  --tw-color-primary-400: 252 232 239;
-  --tw-color-primary-500: 250 220 226;
-  --tw-color-primary-600: 224 177 186;
-  --tw-color-primary-700: 186 123 133;
-  --tw-color-primary-800: 150 80 92;
-  --tw-color-primary-900: 112 45 55;
-  --tw-color-primary-950: 71 19 26;
-  --color-primary-50: rgb(var(--tw-color-primary-50)); /* #FFFCFE */
-  --color-primary-100: rgb(var(--tw-color-primary-100)); /* #FFFCFE */
-  --color-primary-200: rgb(var(--tw-color-primary-200)); /* #FFF7FB */
-  --color-primary-300: rgb(var(--tw-color-primary-300)); /* #FCF0F5 */
-  --color-primary-400: rgb(var(--tw-color-primary-400)); /* #FCE8EF */
-  --color-primary-500: rgb(var(--tw-color-primary-500)); /* #fadce2 */
-  --color-primary-600: rgb(var(--tw-color-primary-600)); /* #E0B1BA */
-  --color-primary-700: rgb(var(--tw-color-primary-700)); /* #BA7B85 */
-  --color-primary-800: rgb(var(--tw-color-primary-800)); /* #96505C */
-  --color-primary-900: rgb(var(--tw-color-primary-900)); /* #702D37 */
-  --color-primary-950: rgb(var(--tw-color-primary-950)); /* #47131A */
-  /* #endregion  /**======== Primary Color =========== */
-
-  /* #region  /**=========== Secondary Color =========== */
-  --tw-color-secondary-50: 251 250 252;
-  --tw-color-secondary-100: 247 245 250;
-  --tw-color-secondary-200: 239 235 245;
-  --tw-color-secondary-300: 226 221 237;
-  --tw-color-secondary-400: 197 193 222;
-  --tw-color-secondary-500: 171 171 208;
-  --tw-color-secondary-600: 140 140 189;
-  --tw-color-secondary-700: 95 95 156;
-  --tw-color-secondary-800: 61 61 125;
-  --tw-color-secondary-900: 35 35 94;
-  --tw-color-secondary-950: 15 15 61;
-  --color-secondary-50: rgb(var(--tw-color-secondary-50)); /* #FBFAFC */
-  --color-secondary-100: rgb(var(--tw-color-secondary-100)); /* #F7F5FA */
-  --color-secondary-200: rgb(var(--tw-color-secondary-200)); /* #EFEBF5 */
-  --color-secondary-300: rgb(var(--tw-color-secondary-300)); /* #E2DDED */
-  --color-secondary-400: rgb(var(--tw-color-secondary-400)); /* #C5C1DE */
-  --color-secondary-500: rgb(var(--tw-color-secondary-500)); /* #ababd0 */
-  --color-secondary-600: rgb(var(--tw-color-secondary-600)); /* #8C8CBD */
-  --color-secondary-700: rgb(var(--tw-color-secondary-700)); /* #5F5F9C */
-  --color-secondary-800: rgb(var(--tw-color-secondary-800)); /* #3D3D7D */
-  --color-secondary-900: rgb(var(--tw-color-secondary-900)); /* #23235E */
-  --color-secondary-950: rgb(var(--tw-color-secondary-950)); /* #0F0F3D */
-  /* #endregion  /**======== Secondary Color =========== */
-}
-
-html,
-body,
-#__next {
-  @apply size-full;
-  font-family: "europa", sans-serif;
-  font-weight: 400;
-  font-style: normal;
+@theme {
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --color-primary: #607da5;
+  --color-primary-dark: #4a6489;
+  --color-blush: #fdf1ed;
+  --color-petal: #fae1d8;
+  --color-ink: #2b2f36;
 }
 
 @layer base {
-  /* inter var - latin */
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: block;
-    src: url("/fonts/inter-var-latin.woff2") format("woff2");
-    unicode-range:
-      U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
-      U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
-      U+2215, U+FEFF, U+FFFD;
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
 
-  /* #region  /**=========== Typography =========== */
-  .h0 {
-    @apply font-primary text-3xl font-bold md:text-5xl;
+  body {
+    @apply bg-blush font-sans text-ink antialiased;
+    background-image: url("/svg/flora.svg");
+    background-size: 1100px;
   }
 
-  h1,
-  .h1 {
-    @apply font-primary text-2xl font-bold md:text-4xl;
+  @media (min-width: 768px) {
+    body {
+      background-size: 1500px;
+      background-attachment: fixed;
+    }
   }
 
-  h2,
-  .h2 {
-    @apply font-primary text-xl font-bold md:text-3xl;
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 
-  h3,
-  .h3 {
-    @apply font-primary text-lg font-bold md:text-2xl;
-  }
-
-  h4,
-  .h4 {
-    @apply font-primary text-base font-bold md:text-lg;
-  }
-
-  body,
-  .p {
-    @apply font-primary text-sm md:text-base;
-  }
-  /* #endregion  /**======== Typography =========== */
-
-  .layout {
-    /* 1100px */
-    max-width: 68.75rem;
-    @apply mx-auto w-11/12;
-  }
-
-  .bg-dark a.custom-link {
-    @apply border-gray-200 hover:border-gray-200/0;
-  }
-
-  /* Class to adjust with sticky footer */
-  .min-h-main {
-    @apply min-h-[calc(100vh-56px)];
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
   }
 }
 
-@layer utilities {
-  .animated-underline {
-    background-image:
-      linear-gradient(#33333300, #33333300),
-      linear-gradient(
-        to right,
-        var(--color-primary-400),
-        var(--color-primary-500)
-      );
-    background-size:
-      100% 2px,
-      0 2px;
-    background-position:
-      100% 100%,
-      0 100%;
-    background-repeat: no-repeat;
+@utility section-title {
+  @apply mb-6 text-2xl font-bold tracking-wide text-primary uppercase md:text-3xl;
+}
+
+@utility card {
+  @apply rounded-2xl bg-white/80 p-6 shadow-sm ring-1 ring-primary/10 backdrop-blur-sm md:p-8;
+}
+
+@utility prose-legal {
+  & h1 {
+    @apply mb-6 text-3xl font-bold text-primary;
   }
-  @media (prefers-reduced-motion: no-preference) {
-    .animated-underline {
-      transition: 0.3s ease;
-      transition-property:
-        background-size, color, background-color, border-color;
-    }
+  & h2 {
+    @apply mt-10 mb-3 text-xl font-bold text-primary;
   }
-  .animated-underline:hover,
-  .animated-underline:focus-visible {
-    background-size:
-      0 2px,
-      100% 2px;
+  & h3 {
+    @apply mt-6 mb-2 text-lg font-semibold;
+  }
+  & p,
+  & ul {
+    @apply mb-4 leading-relaxed;
+  }
+  & ul {
+    @apply list-disc pl-6;
+  }
+  & a {
+    @apply break-words text-primary underline underline-offset-2;
   }
 }
