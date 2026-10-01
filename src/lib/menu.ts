@@ -1,6 +1,6 @@
 /**
  * Speisekarte, abgeglichen mit der PDF und dem Google-Unternehmensprofil
- * (Stand Oktober 2026, beide mit gleichen Preisen). Bei Preisänderungen alle
+ * (Stand Oktober 2026, alle drei mit gleichen Preisen und Texten). Bei Änderungen alle
  * drei Stellen anpassen, bis die Karte direkt aus Google geladen wird.
  */
 export type MenuItem = {
@@ -243,7 +243,7 @@ export const menu: MenuSection[] = [
       },
       {
         name: 'Wasser',
-        description: 'sprudelnd oder still',
+        description: 'Sprudel oder still',
         size: '0,33 l',
         price: 3,
       },
