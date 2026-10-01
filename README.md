@@ -37,7 +37,11 @@ nutzt die öffentliche Profilschnittstelle der Instagram-App, so wie Elfsight
 und ähnliche Widgets. Sie ist nicht offiziell dokumentiert. Ändert Instagram
 etwas, schlägt der Abruf fehl (`docker compose logs` in `/opt/services/flora`
 zeigt „Instagram: Abgleich fehlgeschlagen“) und die Seite zeigt den letzten
-Stand weiter. Die Anpassung steckt dann in `src/lib/instagram/api.ts`.
+Stand weiter. Nach Fehlschlägen wartet der Server immer länger (1 h, 2 h, 4 h,
+höchstens 6 h), weil Instagram häufiges Nachfragen mit längeren Sperren
+(HTTP 429) beantwortet. Den Zeitpunkt des nächsten Versuchs zeigt
+`data/instagram/state.json`. Die Anpassung an Änderungen bei Instagram steckt
+in `src/lib/instagram/api.ts`.
 
 Stories gibt Instagram nur an eingeloggte Nutzer heraus, deshalb fehlen sie.
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { parseProfile } from '../instagram/api';
-import { toMedia } from '../instagram/sync';
+import { nextState, toMedia } from '../instagram/sync';
 
 const node = (overrides: object) => ({
   id: '1',
@@ -73,5 +73,15 @@ describe('Instagram-Profil', () => {
       response([node({ __typename: 'GraphVideo' })])
     ).posts;
     expect(toMedia(post).kind).toBe('video');
+  });
+});
+
+describe('Backoff', () => {
+  const now = Date.parse('2026-10-01T12:00:00Z');
+  const wait = (failures: number) =>
+    (Date.parse(nextState(failures, now).nextAttemptAt) - now) / 60_000;
+
+  test('wartet nach Erfolg 30 Minuten, nach Fehlern doppelt so lange, höchstens 6 h', () => {
+    expect([0, 1, 2, 3, 4, 9].map(wait)).toEqual([30, 60, 120, 240, 360, 360]);
   });
 });

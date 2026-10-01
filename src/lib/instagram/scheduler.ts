@@ -1,7 +1,7 @@
 import { syncInstagram } from './sync';
 
-/** Alle 30 Minuten reicht: neue Beiträge kommen selten, und Instagram drosselt häufige Abrufe. */
-const INTERVAL_MS = 30 * 60 * 1000;
+/** Prüft alle 10 Minuten, ob ein Abgleich fällig ist; den Takt bestimmt sync.ts. */
+const TICK_MS = 10 * 60 * 1000;
 
 export function startInstagramSync() {
   if (process.env.INSTAGRAM_SYNC === 'off') return;
@@ -11,5 +11,5 @@ export function startInstagramSync() {
     );
   };
   tick();
-  setInterval(tick, INTERVAL_MS).unref();
+  setInterval(tick, TICK_MS).unref();
 }

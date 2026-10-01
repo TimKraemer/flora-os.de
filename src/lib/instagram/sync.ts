@@ -4,10 +4,35 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { site } from '@/lib/site';
 import { fetchPublicProfile, type RawPost } from './api';
-import { feedFile, mediaDir, readFeed, writeJsonAtomic } from './store';
+import {
+  feedFile,
+  instagramDir,
+  mediaDir,
+  readFeed,
+  readJson,
+  writeJsonAtomic,
+} from './store';
 import type { InstagramFeed, InstagramMedia } from './types';
 
 export const POST_LIMIT = 8;
+const INTERVAL_MS = 30 * 60 * 1000;
+const MAX_BACKOFF_MS = 6 * 60 * 60 * 1000;
+
+type SyncState = { failures: number; nextAttemptAt: string };
+const stateFile = () => path.join(instagramDir(), 'state.json');
+
+/**
+ * Nach Fehlschlägen (meist HTTP 429, Instagram drosselt) immer länger warten:
+ * 1 h, 2 h, 4 h, höchstens 6 h. Häufiges Nachfragen verlängert die Sperre nur.
+ * Der Zustand liegt im Datenverzeichnis und gilt so auch nach einem Deploy.
+ */
+export function nextState(failures: number, now = Date.now()): SyncState {
+  const wait =
+    failures === 0
+      ? INTERVAL_MS
+      : Math.min(INTERVAL_MS * 2 ** failures, MAX_BACKOFF_MS);
+  return { failures, nextAttemptAt: new Date(now + wait).toISOString() };
+}
 
 const hash = (s: string) => createHash('sha256').update(s).digest('hex');
 
@@ -107,6 +132,9 @@ export function syncInstagram() {
 
 async function run(): Promise<InstagramFeed | null> {
   await mkdir(mediaDir(), { recursive: true });
+  const state = await readJson<SyncState>(stateFile());
+  if (state && Date.parse(state.nextAttemptAt) > Date.now()) return readFeed();
+
   try {
     const profile = await fetchPublicProfile(
       process.env.INSTAGRAM_USERNAME || site.instagram.username
@@ -135,12 +163,15 @@ async function run(): Promise<InstagramFeed | null> {
       posts,
     };
     await writeJsonAtomic(feedFile(), feed);
+    await writeJsonAtomic(stateFile(), nextState(0));
     await prune(feed);
     console.info(`Instagram: ${posts.length} Beiträge aktualisiert`);
     return feed;
   } catch (error) {
+    const next = nextState((state?.failures ?? 0) + 1);
+    await writeJsonAtomic(stateFile(), next);
     console.error(
-      'Instagram: Abgleich fehlgeschlagen, letzter Stand bleibt',
+      `Instagram: Abgleich fehlgeschlagen, letzter Stand bleibt, nächster Versuch ${next.nextAttemptAt}`,
       String(error)
     );
     return readFeed();
