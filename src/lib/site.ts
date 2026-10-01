@@ -4,7 +4,7 @@ export const site = {
   title: 'Café Flora Osnabrück',
   url: 'https://flora-os.de',
   description:
-    'Café Flora in Osnabrück: Kaffee, Matcha und Chai, hausgemachtes Bananenbrot, Kuchen, Bagels, Paninis und Tagessuppe. Augustenburger Str. 4.',
+    'Café Flora in Osnabrück: Kaffee, Matcha und Chai, hausgemachtes Bananenbrot, Kuchen, Bagels, Paninis und Tagessuppe. Im Katharinenviertel, Augustenburger Str. 4.',
   owner: 'Marie Hense',
   email: 'mail@flora-os.de',
   phone: '+49 176 80003612',
@@ -107,11 +107,19 @@ export const menuHighlights = [
 export const faq = [
   {
     q: 'Wo ist das Café Flora?',
-    a: `In der ${site.address.street}, ${site.address.postalCode} ${site.address.city}.`,
+    a: `Im Osnabrücker Katharinenviertel, ${site.address.street}, ${site.address.postalCode} ${site.address.city}.`,
   },
   {
     q: 'Gibt es vegane Optionen?',
     a: 'Ja. Die Bagels gibt es auf Wunsch vegan, und Kaffee, Chai, Matcha und Smoothies bekommst du mit Oatly-Hafermilch.',
+  },
+  {
+    q: 'Kann ich einen Tisch reservieren?',
+    a: 'Nein, Reservierungen nehmen wir leider nicht an. Komm einfach vorbei.',
+  },
+  {
+    q: 'Darf ich meinen Hund mitbringen?',
+    a: 'Ja, Hunde sind bei uns willkommen.',
   },
   {
     q: 'Kann ich etwas mitnehmen?',
