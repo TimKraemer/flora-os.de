@@ -1,0 +1,30 @@
+# Liegt auf scortex-vm unter /opt/services/flora/docker-compose.yaml.
+# Nicht mit `docker compose up -d` neu starten, das nimmt die Seite kurz vom
+# Netz. Neue Versionen spielt rollout.sh ohne Unterbrechung ein.
+name: flora
+
+networks:
+  services_intern:
+    external: true
+
+services:
+  flora-nextjs:
+    image: ghcr.io/timkraemer/flora-os.de:${FLORA_TAG:-latest}
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      - VIRTUAL_HOST=flora-os.de,www.flora-os.de
+      - VIRTUAL_PORT=3002
+      - LETSENCRYPT_HOST=flora-os.de,www.flora-os.de
+      - LETSENCRYPT_EMAIL=mail@tim-kraemer.de
+    labels:
+      # Während des Rollouts laufen kurz zwei Container; ip_hash hält einen
+      # Besucher bei einem, sonst passen HTML und /_next/static nicht zusammen.
+      - com.github.nginx-proxy.nginx-proxy.loadbalance=ip_hash;
+    volumes:
+      # Instagram-Cache und verlängertes Token, gehört UID 1000 (scortex/node)
+      - ./data:/data
+    networks:
+      - services_intern
+    stop_grace_period: 30s

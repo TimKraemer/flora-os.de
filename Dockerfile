@@ -1,77 +1,42 @@
-# Stage 1: image + git
-FROM node:lts-bullseye-slim AS git
+# syntax=docker/dockerfile:1
+
+FROM oven/bun:1.3.3-slim AS bun
+
+FROM node:24-slim AS deps
 WORKDIR /app
+COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
+COPY package.json bun.lock ./
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile --ignore-scripts
 
-# install git
-RUN apt-get update && apt-get --yes install git
-
-# Stage 2: bun deps
-FROM git AS deps
+FROM node:24-slim AS builder
 WORKDIR /app
-
-# Install curl and Bun
-RUN apt-get update && apt-get install -y --no-install-recommends curl unzip && \
-    curl -fsSL https://bun.sh/install | bash && \
-    /root/.bun/bin/bun --version && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-ENV PATH="/root/.bun/bin:${PATH}"
-
-COPY package.json bun.lock* ./
-
-RUN \
-    if [ -f bun.lock ]; then /root/.bun/bin/bun install --frozen-lockfile; \
-    else echo "Lockfile not found." && exit 1; \
-    fi
-
-# Rebuild the source code only when needed
-FROM git AS builder
-WORKDIR /app
-
-# Install curl and Bun
-RUN apt-get update && apt-get install -y --no-install-recommends curl unzip && \
-    curl -fsSL https://bun.sh/install | bash && \
-    /root/.bun/bin/bun --version && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-ENV PATH="/root/.bun/bin:${PATH}"
-
+ENV NEXT_TELEMETRY_DISABLED=1
+COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 COPY --from=deps /app/node_modules ./node_modules
-COPY --chown=nextjs:nodejs . .
+COPY . .
+RUN --mount=type=cache,target=/app/.next/cache bun run build
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-ENV NEXT_TELEMETRY_DISABLED 1
-
-RUN /root/.bun/bin/bun run build
-
-# Production image, copy all the files and run next
-FROM node:lts-bullseye-slim AS runner
+FROM node:24-slim AS runner
 WORKDIR /app
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3002 \
+    HOSTNAME=0.0.0.0 \
+    TZ=Europe/Berlin \
+    DATA_DIR=/data
 
-ENV NODE_ENV production
-# Uncomment the following line in case you want to disable telemetry during runtime.
-ENV NEXT_TELEMETRY_DISABLED 1
+# Nutzer „node“ (UID 1000) gehört auf dem Server auch /opt/services/flora/data.
+RUN mkdir -p /data && chown node:node /data
+COPY --from=builder --chown=node:node /app/public ./public
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# copy translation related files
-COPY --from=builder /app/next.config.js ./next.config.js
-# COPY --from=builder /app/next-i18next.config.js ./next-i18next.config.js
-
-USER nextjs
-
+USER node
 EXPOSE 3002
+VOLUME ["/data"]
 
-ENV PORT 3002
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://localhost:3002/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 CMD ["node", "server.js"]
