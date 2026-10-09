@@ -73,11 +73,18 @@ export type Row = {
   text: string;
   price: Segment[];
   size?: string;
+  /** Fußnote wie „*wahlweise mit einer Kugel Vanilleeis“: fett, aber klein */
+  footnote?: boolean;
 };
 
 const priceSegments = (price: MenuItem['price']): Segment[] => [
   { text: pdfPrice(price), bold: true },
 ];
+
+/** Im Original stehen vegane Gerichte mit „(v)“ hinter der Beschreibung. */
+const withVegan = (text: string, vegan: boolean) =>
+  vegan ? `${text} (v)`.trim() : text;
+const isVegan = (item: MenuItem) => item.diet === 'vegan';
 
 /**
  * „ESPRESSO doppio“ → Grundname „ESPRESSO“, Zusatz „doppio“. Der Grundname
@@ -96,11 +103,36 @@ export function splitLabel(label: string) {
 }
 
 /**
+ * Aufpreis-Variante: Beschreibung ist die des Grundeintrags plus Zusatz
+ * („wechselndes tagesangebot“ → „… mit einer Kugel Vanilleeis“), Preis höher.
+ * Im Original eine Fußnote mit Aufpreis („*wahlweise … 1,3“).
+ */
+function surchargeOf(main: MenuItem, variant: MenuItem, suffix: string) {
+  const base = main.description ?? '';
+  const description = variant.description ?? '';
+  if (!base || !description.startsWith(base)) return null;
+  const extra = description.slice(base.length).trim();
+  if (
+    !extra ||
+    extra.toLocaleLowerCase('de-DE') === suffix.toLocaleLowerCase('de-DE')
+  ) {
+    return null;
+  }
+  if (typeof main.price !== 'number' || typeof variant.price !== 'number') {
+    return null;
+  }
+  const amount = Math.round((variant.price - main.price) * 100) / 100;
+  return amount > 0 ? { extra, amount } : null;
+}
+
+/**
  * Google führt Varianten als eigene Einträge („ESPRESSO“, „ESPRESSO doppio“).
  * Im Original stehen sie zusammen; das wird hier nachgebaut:
  * - kurzer Zusatz: in die Preisspalte („2,5 / doppio 3,2“)
  * - langer Zusatz: eigene Zeile darunter („wahlweise mit joghurt …  5“)
+ * - Aufpreis: Fußnote („wechselndes tagesangebot*“, „*wahlweise … 1,3“)
  * - nur Varianten ohne Grundeintrag: „CROISSANT blanko od. mit butter …  2,5 / 3“
+ * Vegane Gerichte bekommen wie im Original ein „(v)“.
  */
 export function rowsOf(items: MenuItem[]): Row[] {
   const groups: {
@@ -128,7 +160,7 @@ export function rowsOf(items: MenuItem[]): Row[] {
       return [
         {
           bold: itemLabel(first),
-          text: first.description ?? '',
+          text: withVegan(first.description ?? '', isVegan(first)),
           price: priceSegments(first.price),
           size: sizeText(first),
         },
@@ -139,7 +171,10 @@ export function rowsOf(items: MenuItem[]): Row[] {
       return [
         {
           bold: base,
-          text: group.map((g) => g.suffix).join(' od. '),
+          text: withVegan(
+            group.map((g) => g.suffix).join(' od. '),
+            group.every((g) => isVegan(g.item))
+          ),
           price: priceSegments(group.flatMap((g) => g.item.price)),
           size: sizeText(first),
         },
@@ -147,29 +182,42 @@ export function rowsOf(items: MenuItem[]): Row[] {
     }
     const row: Row = {
       bold: base,
-      text: main.item.description ?? '',
+      text: withVegan(main.item.description ?? '', isVegan(main.item)),
       price: priceSegments(main.item.price),
       size: sizeText(main.item),
     };
-    const extra: Row[] = [];
+    const extraRows: Row[] = [];
+    const footnotes: Row[] = [];
     for (const { item, suffix } of group) {
       if (item === main.item) continue;
-      if (!suffix.includes(' ')) {
+      const surcharge = surchargeOf(main.item, item, suffix);
+      if (surcharge) {
+        row.text = `${row.text}*`;
+        footnotes.push({
+          bold: `*wahlweise ${surcharge.extra}`,
+          text: '',
+          price: priceSegments(surcharge.amount),
+          footnote: true,
+        });
+      } else if (!suffix.includes(' ')) {
         row.price.push(
           { text: ` / ${suffix.toLocaleLowerCase('de-DE')} `, bold: false },
           ...priceSegments(item.price)
         );
       } else {
         const text = suffix.toLocaleLowerCase('de-DE');
-        extra.push({
+        extraRows.push({
           bold: '',
-          text: text.startsWith('wahlweise') ? text : `wahlweise ${text}`,
+          text: withVegan(
+            text.startsWith('wahlweise') ? text : `wahlweise ${text}`,
+            isVegan(item)
+          ),
           price: priceSegments(item.price),
           size: sizeText(item),
         });
       }
     }
-    return [row, ...extra];
+    return [row, ...extraRows, ...footnotes];
   });
 }
 
@@ -201,7 +249,11 @@ function wrapAt(
     ...row.bold
       .split(/\s+/)
       .filter(Boolean)
-      .map((text) => ({ text, font: fonts.bold, size: m.name })),
+      .map((text) => ({
+        text,
+        font: fonts.bold,
+        size: row.footnote ? m.price : m.name,
+      })),
     ...row.text
       .toLocaleLowerCase('de-DE')
       .split(/\s+/)

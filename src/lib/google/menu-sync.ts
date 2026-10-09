@@ -18,7 +18,8 @@ export type StoredMenu = {
 
 export const menuFile = () => path.join(dataDir(), 'google', 'menu.json');
 
-const INTERVAL_MS = 6 * 60 * 60 * 1000;
+/** Stündlich: Änderungen im Google-Profil sind spätestens nach einer Stunde online. */
+const INTERVAL_MS = 60 * 60 * 1000;
 
 /**
  * Holt die Speisekarte aus dem Google-Unternehmensprofil und legt sie in

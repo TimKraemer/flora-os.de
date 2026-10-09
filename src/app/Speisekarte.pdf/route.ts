@@ -16,7 +16,7 @@ export async function GET() {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': 'inline; filename="Speisekarte-Cafe-Flora.pdf"',
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': 'public, max-age=600',
       ETag: `"${key.slice(0, 16)}"`,
     },
   });

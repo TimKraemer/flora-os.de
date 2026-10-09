@@ -67,3 +67,40 @@ describe('Speisekarten-PDF', () => {
     ]);
   });
 });
+
+describe('Kennzeichnungen wie im Original', () => {
+  test('vegane Gerichte bekommen (v)', () => {
+    const [row] = rowsOf([
+      {
+        ...item('LAUGENBREZEL', 3, 'blanko od. butter od. kräuterbutter'),
+        diet: 'vegan',
+      },
+    ]);
+    expect(row.text).toBe('blanko od. butter od. kräuterbutter (v)');
+  });
+
+  test('Aufpreis-Variante wird zur Fußnote mit Differenz', () => {
+    const rows = rowsOf([
+      item('KUCHEN', 4, 'wechselndes tagesangebot'),
+      item(
+        'KUCHEN Vanilleeis',
+        5.3,
+        'wechselndes tagesangebot mit einer Kugel Vanilleeis'
+      ),
+    ]);
+    expect(
+      rows.map((r) => [r.bold, r.text, priceText(r), r.footnote ?? false])
+    ).toEqual([
+      ['KUCHEN', 'wechselndes tagesangebot*', '4', false],
+      ['*wahlweise mit einer Kugel Vanilleeis', '', '1,3', true],
+    ]);
+  });
+
+  test('„doppio“ bleibt in der Preisspalte, obwohl die Beschreibung länger ist', () => {
+    const [row] = rowsOf([
+      item('ESPRESSO', 2.5, 'espressoshot'),
+      item('ESPRESSO doppio', 3.2, 'espressoshot doppio'),
+    ]);
+    expect(priceText(row)).toBe('2,5 / doppio 3,2');
+  });
+});
