@@ -21,7 +21,7 @@ bun run dev
 | Was | Wo |
 | --- | --- |
 | Adresse, Telefon, E-Mail, FAQ | `src/lib/site.ts` |
-| Speisekarte mit Preisen (Seite `/speisekarte`, Startseite, llms-full.txt) | `src/lib/menu.ts`, dazu `public/Speisekarte.pdf` und die Karte im Google-Unternehmensprofil |
+| Speisekarte mit Preisen (Seite `/speisekarte`, Startseite, llms-full.txt) | im Google-Unternehmensprofil (Speisekarte bearbeiten); die Website übernimmt Änderungen innerhalb von 6 Stunden. `public/Speisekarte.pdf` separat ersetzen |
 | Öffnungszeiten | kommen aus Google Maps (Google-Unternehmensprofil pflegen) |
 | Impressum, Datenschutz | `src/app/impressum/page.tsx`, `src/app/datenschutz/page.tsx` |
 
@@ -52,6 +52,19 @@ darf auf dem Server nur dieses Skript ausführen. Die Website nimmt
 Bilder weiter selbst.
 
 Stories gibt Instagram nur an eingeloggte Nutzer heraus, deshalb fehlen sie.
+
+## Speisekarte aus Google
+
+Der Server holt die Karte alle sechs Stunden über die Google Business Profile
+API (`getFoodMenus`, Cloud-Projekt „flora-os“ im Konto tiekei22@gmail.com) und
+legt sie in `data/google/menu.json` ab. Ohne Zugangsdaten oder vor dem ersten
+Abgleich gilt die Karte aus `src/lib/menu.ts`. Welche Gerichte auf der
+Startseite stehen, steht ebenfalls dort (`highlightNames`).
+
+Zugangsdaten in `/opt/services/flora/.env.production`: `GOOGLE_BP_CLIENT_ID`,
+`GOOGLE_BP_CLIENT_SECRET`, `GOOGLE_BP_REFRESH_TOKEN`. Wird der Token ungültig
+(Passwortänderung, Widerruf im Google-Konto), neu holen mit
+`bun scripts/google-business-login.ts` und den Wert dort ersetzen.
 
 ## KI und Suchmaschinen
 
