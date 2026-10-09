@@ -65,19 +65,148 @@ const sectionLabel = (section: MenuSection) =>
   (section.label ?? section.title).toLocaleUpperCase('de-DE');
 const sizeText = (item: MenuItem) => item.size?.replace(' ', '');
 
+/** Teil der Preisspalte: Preise fett, Zwischentexte („ / doppio “) normal wie im Original */
+type Segment = { text: string; bold: boolean };
+/** Eine Zeile der Karte, kann mehrere Google-Einträge zusammenfassen */
+export type Row = {
+  bold: string;
+  text: string;
+  price: Segment[];
+  size?: string;
+};
+
+const priceSegments = (price: MenuItem['price']): Segment[] => [
+  { text: pdfPrice(price), bold: true },
+];
+
+/**
+ * „ESPRESSO doppio“ → Grundname „ESPRESSO“, Zusatz „doppio“. Der Grundname
+ * ist die Folge von Wörtern in Großbuchstaben am Anfang.
+ */
+export function splitLabel(label: string) {
+  const words = label.trim().split(/\s+/);
+  let n = 0;
+  while (n < words.length && words[n] === words[n].toLocaleUpperCase('de-DE')) {
+    n++;
+  }
+  return {
+    base: words.slice(0, n).join(' '),
+    suffix: words.slice(n).join(' '),
+  };
+}
+
+/**
+ * Google führt Varianten als eigene Einträge („ESPRESSO“, „ESPRESSO doppio“).
+ * Im Original stehen sie zusammen; das wird hier nachgebaut:
+ * - kurzer Zusatz: in die Preisspalte („2,5 / doppio 3,2“)
+ * - langer Zusatz: eigene Zeile darunter („wahlweise mit joghurt …  5“)
+ * - nur Varianten ohne Grundeintrag: „CROISSANT blanko od. mit butter …  2,5 / 3“
+ */
+export function rowsOf(items: MenuItem[]): Row[] {
+  const groups: {
+    base: string;
+    items: { item: MenuItem; suffix: string }[];
+  }[] = [];
+  for (const item of items) {
+    const { base, suffix } = splitLabel(itemLabel(item));
+    const last = groups.at(-1);
+    if (
+      last &&
+      base &&
+      last.base === base &&
+      sizeText(last.items[0].item) === sizeText(item)
+    ) {
+      last.items.push({ item, suffix });
+    } else {
+      groups.push({ base, items: [{ item, suffix }] });
+    }
+  }
+
+  return groups.flatMap(({ base, items: group }): Row[] => {
+    const first = group[0].item;
+    if (group.length === 1) {
+      return [
+        {
+          bold: itemLabel(first),
+          text: first.description ?? '',
+          price: priceSegments(first.price),
+          size: sizeText(first),
+        },
+      ];
+    }
+    const main = group.find((g) => g.suffix === '');
+    if (!main) {
+      return [
+        {
+          bold: base,
+          text: group.map((g) => g.suffix).join(' od. '),
+          price: priceSegments(group.flatMap((g) => g.item.price)),
+          size: sizeText(first),
+        },
+      ];
+    }
+    const row: Row = {
+      bold: base,
+      text: main.item.description ?? '',
+      price: priceSegments(main.item.price),
+      size: sizeText(main.item),
+    };
+    const extra: Row[] = [];
+    for (const { item, suffix } of group) {
+      if (item === main.item) continue;
+      if (!suffix.includes(' ')) {
+        row.price.push(
+          { text: ` / ${suffix.toLocaleLowerCase('de-DE')} `, bold: false },
+          ...priceSegments(item.price)
+        );
+      } else {
+        const text = suffix.toLocaleLowerCase('de-DE');
+        extra.push({
+          bold: '',
+          text: text.startsWith('wahlweise') ? text : `wahlweise ${text}`,
+          price: priceSegments(item.price),
+          size: sizeText(item),
+        });
+      }
+    }
+    return [row, ...extra];
+  });
+}
+
 type Word = { text: string; font: PDFFont; size: number };
 
+/**
+ * Wie im Original: Passt eine Zeile knapp nicht, wird nur die Beschreibung
+ * etwas kleiner gesetzt (bis 80 %), statt umzubrechen.
+ */
+const SHRINK_STEPS = [1, 0.95, 0.9, 0.85, 0.8];
+
+function wrap(row: Row, fonts: Fonts, m: Metrics, maxWidth: number) {
+  for (const k of SHRINK_STEPS) {
+    const lines = wrapAt(row, fonts, m, maxWidth, m.text * k);
+    if (lines.length === 1) return lines;
+  }
+  return wrapAt(row, fonts, m, maxWidth, m.text);
+}
+
 /** Name fett, Beschreibung normal, in Zeilen umbrochen wie im Original. */
-function wrap(item: MenuItem, fonts: Fonts, m: Metrics, maxWidth: number) {
+function wrapAt(
+  row: Row,
+  fonts: Fonts,
+  m: Metrics,
+  maxWidth: number,
+  textSize: number
+) {
   const words: Word[] = [
-    ...itemLabel(item)
+    ...row.bold
       .split(/\s+/)
+      .filter(Boolean)
       .map((text) => ({ text, font: fonts.bold, size: m.name })),
-    ...(item.description ?? '')
+    ...row.text
       .toLocaleLowerCase('de-DE')
       .split(/\s+/)
       .filter(Boolean)
-      .map((text) => ({ text, font: fonts.regular, size: m.text })),
+      .map((text) => ({ text, font: fonts.regular, size: textSize })),
   ];
   const lines: { word: Word; x: number }[][] = [[]];
   let x = 0;
@@ -96,22 +225,41 @@ function wrap(item: MenuItem, fonts: Fonts, m: Metrics, maxWidth: number) {
   return lines;
 }
 
-/** Platz für Name und Beschreibung links der Größen- bzw. Preisspalte */
-function textWidth(section: MenuSection, kind: Kind, fonts: Fonts, m: Metrics) {
-  const { left, sizeX, maxRight } = LAYOUT[kind];
-  const hasSize = section.items.some((i) => sizeText(i));
-  const firstColumn = Math.min(
-    hasSize ? sizeX : Number.POSITIVE_INFINITY,
-    ...section.items.map((i) => priceX(i, kind, fonts, m))
-  );
-  return Math.min(firstColumn, maxRight) - 10 - left;
-}
+const segmentWidth = (seg: Segment, fonts: Fonts, m: Metrics) =>
+  seg.bold
+    ? fonts.bold.widthOfTextAtSize(seg.text, m.price)
+    : fonts.regular.widthOfTextAtSize(seg.text, m.text);
 
 /** Preis linksbündig in der Preisspalte; passt er nicht bis zum Rand, rechtsbündig am Rand. */
-function priceX(item: MenuItem, kind: Kind, fonts: Fonts, m: Metrics) {
+function priceX(row: Row, kind: Kind, fonts: Fonts, m: Metrics) {
   const { priceX: x, maxRight } = LAYOUT[kind];
-  const w = fonts.bold.widthOfTextAtSize(pdfPrice(item.price), m.price);
+  const w = row.price.reduce(
+    (sum, seg) => sum + segmentWidth(seg, fonts, m),
+    0
+  );
   return Math.min(x, maxRight - w);
+}
+
+/**
+ * Platz für Name und Beschreibung links der Größen- bzw. Preisspalte. Wie im
+ * Original gilt das je Zeile: Ein breiter Preis („2,5 / doppio 3,2“) macht
+ * nur seine eigene Zeile schmaler.
+ */
+function textWidth(
+  rows: Row[],
+  row: Row,
+  kind: Kind,
+  fonts: Fonts,
+  m: Metrics
+) {
+  const { left, sizeX, maxRight } = LAYOUT[kind];
+  const hasSize = rows.some((r) => r.size);
+  const limit = Math.min(
+    hasSize ? sizeX : Number.POSITIVE_INFINITY,
+    priceX(row, kind, fonts, m),
+    maxRight
+  );
+  return limit - 5 - left;
 }
 
 function sectionHeight(
@@ -120,8 +268,10 @@ function sectionHeight(
   fonts: Fonts,
   m: Metrics
 ) {
-  const width = textWidth(section, kind, fonts, m);
-  const lines = section.items.map((i) => wrap(i, fonts, m, width).length);
+  const rows = rowsOf(section.items);
+  const lines = rows.map(
+    (r) => wrap(r, fonts, m, textWidth(rows, r, kind, fonts, m)).length
+  );
   return (
     m.headingGap +
     lines.reduce((sum, n) => sum + (n - 1) * m.line, 0) +
@@ -169,21 +319,29 @@ function drawSection(
     m.heading
   );
 
-  const width = textWidth(section, kind, fonts, m);
+  const rows = rowsOf(section.items);
   let y = headingY - m.headingGap;
-  section.items.forEach((item, index) => {
+  rows.forEach((row, index) => {
     if (index > 0) y -= m.itemGap;
-    const lines = wrap(item, fonts, m, width);
+    const lines = wrap(row, fonts, m, textWidth(rows, row, kind, fonts, m));
     lines.forEach((line, n) => {
       for (const { word, x } of line) {
         draw(word.text, left + x, y - n * m.line, word.font, word.size);
       }
     });
     const lastY = y - (lines.length - 1) * m.line;
-    const price = pdfPrice(item.price);
-    draw(price, priceX(item, kind, fonts, m), lastY, fonts.bold, m.price);
-    const size = sizeText(item);
-    if (size) draw(size, sizeX, lastY, fonts.bold, m.price);
+    let x = priceX(row, kind, fonts, m);
+    for (const seg of row.price) {
+      draw(
+        seg.text,
+        x,
+        lastY,
+        seg.bold ? fonts.bold : fonts.regular,
+        seg.bold ? m.price : m.text
+      );
+      x += segmentWidth(seg, fonts, m);
+    }
+    if (row.size) draw(row.size, sizeX, lastY, fonts.bold, m.price);
     y = lastY;
   });
   return y;
