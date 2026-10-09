@@ -8,6 +8,8 @@ import { readJson } from '@/lib/json-store';
  */
 export type MenuItem = {
   name: string;
+  /** Schreibweise aus Google („ESPRESSO doppio“), für die PDF */
+  label?: string;
   description?: string;
   /** Preis in Euro; mehrere Werte für Varianten (z. B. einfach / doppelt) */
   price: number | number[];
@@ -18,6 +20,8 @@ export type MenuItem = {
 export type MenuSection = {
   id: string;
   title: string;
+  /** Schreibweise aus Google („HEISSES“), für die PDF */
+  label?: string;
   note?: string;
   items: MenuItem[];
 };

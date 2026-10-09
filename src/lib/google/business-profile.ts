@@ -156,15 +156,43 @@ const price = (m?: z.infer<typeof moneySchema>) =>
     ? Math.round((Number(m.units ?? 0) + (m.nanos ?? 0) / 1e9) * 100) / 100
     : undefined;
 
-/** „LATTE MACCHIATO“ → „Latte Macchiato“; „&“ und Zahlen bleiben. */
+/**
+ * Google speichert die Namen in Großbuchstaben, dabei geht das ß verloren
+ * („HEISSES“). Diese Wortanfänge bekommen es zurück.
+ */
+const sharpS: [RegExp, string][] = [
+  [/(^|[^\p{L}])heiss/gu, '$1heiß'],
+  [/(^|[^\p{L}])gross/gu, '$1groß'],
+  [/(^|[^\p{L}])süss/gu, '$1süß'],
+  [/strasse/gu, 'straße'],
+];
+
+/** „LATTE MACCHIATO“ → „Latte Macchiato“, „HEISSES“ → „Heißes“. */
 export function titleCase(text: string) {
-  return text
-    .trim()
-    .toLocaleLowerCase('de-DE')
-    .replace(
-      /(^|[\s(/-])(\p{L})/gu,
-      (_, sep, ch) => sep + ch.toLocaleUpperCase('de-DE')
-    );
+  let lower = text.trim().toLocaleLowerCase('de-DE');
+  for (const [pattern, replacement] of sharpS) {
+    lower = lower.replace(pattern, replacement);
+  }
+  return lower.replace(
+    /(^|[\s(/-])(\p{L})/gu,
+    (_, sep, ch) => sep + ch.toLocaleUpperCase('de-DE')
+  );
+}
+
+/**
+ * Google-Beschreibungen enthalten Größe und Hinweise im selben Feld:
+ * „mango, ananas 0,33l Alle Smoothies gerne mit …“. Die Größe kommt in
+ * eine eigene Spalte, der Text danach wird zum Hinweis des Abschnitts.
+ */
+export function splitDescription(text = '') {
+  const match = /(?:^|\s)(\d+,\d+\s?l)\b/.exec(text);
+  if (!match) return { description: text.trim() };
+  const size = match[1].replace(/\s/g, ' ').replace(/(\d)l$/, '$1 l');
+  return {
+    description: text.slice(0, match.index).trim(),
+    size,
+    note: text.slice(match.index + match[0].length).trim() || undefined,
+  };
 }
 
 const slug = (text: string) =>
@@ -191,6 +219,7 @@ export function toMenuSections(
   return menu.sections
     .map((section) => {
       const title = titleCase(section.labels[0].displayName);
+      const notes = new Set<string>();
       const items = section.items.flatMap((item): MenuItem[] => {
         const base = price(item.attributes?.price);
         const optionPrices = (item.options ?? [])
@@ -198,11 +227,21 @@ export function toMenuSections(
           .filter((p) => p !== undefined);
         const prices = [base, ...optionPrices].filter((p) => p !== undefined);
         if (prices.length === 0) return [];
-        const description = item.labels[0].description?.trim();
+        const { description, size, note } = splitDescription(
+          item.labels[0].description
+        );
+        if (note) notes.add(note);
+        const label = item.labels[0].displayName.trim();
+        // „CROISSANT blanko“ mit Beschreibung „blanko“: doppelt, weglassen
+        const repeats = label
+          .toLocaleLowerCase('de-DE')
+          .endsWith(description.toLocaleLowerCase('de-DE'));
         return [
           {
-            name: titleCase(item.labels[0].displayName),
-            ...(description ? { description } : {}),
+            name: titleCase(label),
+            label,
+            ...(description && !repeats ? { description } : {}),
+            ...(size ? { size } : {}),
             price: prices.length === 1 ? prices[0] : prices,
             ...(diet(item.attributes?.dietaryRestriction)
               ? { diet: diet(item.attributes?.dietaryRestriction) }
@@ -210,7 +249,14 @@ export function toMenuSections(
           },
         ];
       });
-      return { id: slug(title), title, items };
+      const note = [...notes].join(' ') || undefined;
+      return {
+        id: slug(title),
+        title,
+        label: section.labels[0].displayName.trim(),
+        ...(note ? { note } : {}),
+        items,
+      };
     })
     .filter((s) => s.items.length > 0);
 }

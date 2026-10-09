@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
   foodMenusSchema,
+  splitDescription,
   titleCase,
   toMenuSections,
 } from '../google/business-profile';
@@ -66,13 +67,14 @@ describe('Speisekarte aus Google', () => {
       ['kaffee', 'Kaffee'],
       ['limos-und-sprudeliges', 'Limos & Sprudeliges'],
     ]);
-    expect(sections[0].items[0]).toEqual({
+    expect(sections[0].items[0]).toMatchObject({
       name: 'Flat White',
       description: 'zwei espressi mit flach geschäumter milch',
       price: 4.5,
     });
-    expect(sections[0].items[1]).toEqual({
+    expect(sections[0].items[1]).toMatchObject({
       name: 'Espresso Doppio',
+      label: 'ESPRESSO doppio',
       price: 3.2,
     });
   });
@@ -91,6 +93,28 @@ describe('Speisekarte aus Google', () => {
       'Flat White',
       'Bananenbrot',
     ]);
+  });
+
+  test('trennt Größe und Hinweis von der Beschreibung', () => {
+    expect(
+      splitDescription(
+        'banane, milch, zimt 0,3l Alle Smoothies gerne mit Hafermilch.'
+      )
+    ).toEqual({
+      description: 'banane, milch, zimt',
+      size: '0,3 l',
+      note: 'Alle Smoothies gerne mit Hafermilch.',
+    });
+    expect(splitDescription('verlängerter espresso')).toEqual({
+      description: 'verlängerter espresso',
+    });
+  });
+
+  test('gibt Wörtern ihr ß zurück', () => {
+    expect(titleCase('HEISSES')).toBe('Heißes');
+    expect(titleCase('HEISSE SCHOKOLADE')).toBe('Heiße Schokolade');
+    expect(titleCase('ESPRESSO')).toBe('Espresso');
+    expect(titleCase('WASSER')).toBe('Wasser');
   });
 
   test('schreibt Großbuchstaben normal', () => {

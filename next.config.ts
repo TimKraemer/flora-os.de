@@ -33,14 +33,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   typedRoutes: true,
+  // Vorlage und Schriften für die erzeugte Speisekarte (src/lib/menu-pdf.ts)
+  outputFileTracingIncludes: { '/Speisekarte.pdf': ['./assets/**/*'] },
   turbopack: { root: import.meta.dirname },
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },
-      {
-        source: '/Speisekarte.pdf',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=3600' }],
-      },
       {
         source: '/(favicon|svg)/:file*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=604800' }],
