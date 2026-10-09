@@ -150,8 +150,11 @@ export async function fetchFoodMenus(token: string, location: string) {
   );
 }
 
+// Google speichert z. B. 2,80 € als units 2, nanos 799999998; auf Cent runden.
 const price = (m?: z.infer<typeof moneySchema>) =>
-  m ? Number(m.units ?? 0) + (m.nanos ?? 0) / 1e9 : undefined;
+  m
+    ? Math.round((Number(m.units ?? 0) + (m.nanos ?? 0) / 1e9) * 100) / 100
+    : undefined;
 
 /** „LATTE MACCHIATO“ → „Latte Macchiato“; „&“ und Zahlen bleiben. */
 export function titleCase(text: string) {

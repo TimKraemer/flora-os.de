@@ -32,6 +32,12 @@ const response = foodMenusSchema.parse({
                 price: { currencyCode: 'EUR', units: '3', nanos: 200000000 },
               },
             },
+            {
+              labels: [{ displayName: 'ESPRESSO MACCHIATO' }],
+              attributes: {
+                price: { currencyCode: 'EUR', units: '2', nanos: 799999998 },
+              },
+            },
             { labels: [{ displayName: 'OHNE PREIS' }] },
           ],
         },
@@ -71,8 +77,12 @@ describe('Speisekarte aus Google', () => {
     });
   });
 
+  test('rundet Google-Preise auf Cent', () => {
+    expect(sections[0].items[2].price).toBe(2.8);
+  });
+
   test('lässt Einträge ohne Preis weg und übernimmt vegan', () => {
-    expect(sections[0].items).toHaveLength(2);
+    expect(sections[0].items).toHaveLength(3);
     expect(sections[1].items[0].diet).toBe('vegan');
   });
 
