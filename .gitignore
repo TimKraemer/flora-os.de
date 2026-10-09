@@ -41,3 +41,6 @@ next-env.d.ts
 /data
 
 .claude/
+
+# Google-Freigabe (scripts/google-business-login.ts)
+.google-refresh-token

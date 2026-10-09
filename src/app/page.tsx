@@ -15,7 +15,7 @@ import { JsonLd } from '@/components/JsonLd';
 import { OpeningHours } from '@/components/OpeningHours';
 import { OpenStatusBadge } from '@/components/OpenStatusBadge';
 import { readFeed } from '@/lib/instagram/store';
-import { formatPrice, menuHighlightItems } from '@/lib/menu';
+import { formatPrice, getMenu, highlightsOf } from '@/lib/menu';
 import { getOpeningHours, groupByDay } from '@/lib/opening-hours';
 import { faq, fullAddress, site } from '@/lib/site';
 import { cafeSchema } from '@/lib/structured-data';
@@ -46,7 +46,11 @@ const stickers = [
 ];
 
 export default async function HomePage() {
-  const [periods, feed] = await Promise.all([getOpeningHours(), readFeed()]);
+  const [periods, feed, menu] = await Promise.all([
+    getOpeningHours(),
+    readFeed(),
+    getMenu(),
+  ]);
 
   return (
     <>
@@ -128,7 +132,7 @@ export default async function HomePage() {
             </div>
 
             <ul className='mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4'>
-              {menuHighlightItems.slice(0, 8).map((item, i) => (
+              {highlightsOf(menu).map((item, i) => (
                 <li
                   key={item.name}
                   className={`note flex flex-col ${noteColors[i % noteColors.length]}`}

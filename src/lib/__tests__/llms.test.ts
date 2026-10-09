@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { llmsFullTxt, llmsTxt } from '../llms';
+import { fallbackMenu } from '../menu';
 
 const periods = [{ day: 1, open: '09:30', close: '18:00' }];
 
@@ -19,23 +20,28 @@ describe('llms.txt', () => {
   });
 
   test('übernimmt Instagram-Texte in die ausführliche Fassung', () => {
-    const text = llmsFullTxt(periods, {
-      updatedAt: '2026-10-01T00:00:00Z',
-      profile: { username: 'cafe_flora_osnabrueck', name: 'Café Flora' },
-      posts: [
-        {
-          id: '1',
-          kind: 'image',
-          caption: 'Neuer Kuchen: Zitrone-Mohn',
-          alt: '',
-          permalink: 'https://www.instagram.com/p/abc/',
-          timestamp: '2026-09-30T08:00:00+0000',
-          image: '1.webp',
-          thumb: '1-640.webp',
-        },
-      ],
-    });
+    const text = llmsFullTxt(
+      periods,
+      {
+        updatedAt: '2026-10-01T00:00:00Z',
+        profile: { username: 'cafe_flora_osnabrueck', name: 'Café Flora' },
+        posts: [
+          {
+            id: '1',
+            kind: 'image',
+            caption: 'Neuer Kuchen: Zitrone-Mohn',
+            alt: '',
+            permalink: 'https://www.instagram.com/p/abc/',
+            timestamp: '2026-09-30T08:00:00+0000',
+            image: '1.webp',
+            thumb: '1-640.webp',
+          },
+        ],
+      },
+      fallbackMenu
+    );
     expect(text).toContain('## Neueste Instagram-Beiträge');
     expect(text).toContain('Neuer Kuchen: Zitrone-Mohn');
+    expect(text).toContain('- Flat White: 4,50 €');
   });
 });

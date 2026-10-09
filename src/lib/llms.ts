@@ -1,5 +1,5 @@
 import type { InstagramFeed } from './instagram/types';
-import { formatPrice, menu } from './menu';
+import { formatPrice, type MenuSection } from './menu';
 import { groupByDay, type Period } from './opening-hours';
 import { faq, fullAddress, site } from './site';
 
@@ -53,7 +53,8 @@ ${hoursBlock(periods)}
 
 export function llmsFullTxt(
   periods: Period[] | null,
-  feed: InstagramFeed | null
+  feed: InstagramFeed | null,
+  menu: MenuSection[]
 ) {
   const menuText = menu
     .map(

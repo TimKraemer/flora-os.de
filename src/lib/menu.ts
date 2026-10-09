@@ -1,7 +1,10 @@
+import { menuFile, type StoredMenu } from '@/lib/google/menu-sync';
+import { readJson } from '@/lib/json-store';
+
 /**
- * Speisekarte, abgeglichen mit der PDF und dem Google-Unternehmensprofil
- * (Stand Oktober 2026, alle drei mit gleichen Preisen und Texten). Bei Änderungen alle
- * drei Stellen anpassen, bis die Karte direkt aus Google geladen wird.
+ * Die Speisekarte kommt aus dem Google-Unternehmensprofil (src/lib/google).
+ * Die Liste unten ist nur der Rückfall, solange noch kein Abgleich gelaufen
+ * ist; Stand Oktober 2026, damals mit Google und PDF abgeglichen.
  */
 export type MenuItem = {
   name: string;
@@ -10,8 +13,6 @@ export type MenuItem = {
   price: number | number[];
   size?: string;
   diet?: 'vegan' | 'vegetarisch';
-  /** auf der Startseite zeigen */
-  highlight?: boolean;
 };
 
 export type MenuSection = {
@@ -24,7 +25,7 @@ export type MenuSection = {
 const oatly =
   'Alle Smoothies gerne mit unserer Oatly-Hafermilch oder wahlweise mit Kuhmilch.';
 
-export const menu: MenuSection[] = [
+export const fallbackMenu: MenuSection[] = [
   {
     id: 'kaffee',
     title: 'Kaffee',
@@ -44,7 +45,6 @@ export const menu: MenuSection[] = [
         name: 'Flat White',
         description: 'zwei Espressi mit flach geschäumter Milch',
         price: 4.5,
-        highlight: true,
       },
       {
         name: 'Americano',
@@ -123,7 +123,6 @@ export const menu: MenuSection[] = [
         description: 'Eiswürfel, Matcha, kalte Milch, Beerenpüree',
         size: '0,33 l',
         price: 6.5,
-        highlight: true,
       },
       {
         name: 'Iced Chai Latte',
@@ -148,7 +147,6 @@ export const menu: MenuSection[] = [
         description: 'mit viel aufgeschäumter Milch',
         size: '0,33 l',
         price: 5,
-        highlight: true,
       },
       { name: 'Chai Tea', description: 'als Karaffe', price: 5 },
       {
@@ -201,7 +199,6 @@ export const menu: MenuSection[] = [
           'Mango, Ananas, Orangensaft, Milch, Zitronenschalenabrieb und Olivenöl',
         size: '0,33 l',
         price: 6.5,
-        highlight: true,
       },
       {
         name: 'Roter Smoothie',
@@ -258,7 +255,6 @@ export const menu: MenuSection[] = [
         description: 'Espresso, Vodka, Kahlúa',
         size: '0,28 l',
         price: 7,
-        highlight: true,
       },
       {
         name: 'Aperol',
@@ -339,7 +335,6 @@ export const menu: MenuSection[] = [
           'nach Hausrezept gebacken, wahlweise mit Joghurt und Früchten',
         price: [3, 5],
         diet: 'vegan',
-        highlight: true,
       },
       {
         name: 'Laugenbrezel',
@@ -359,7 +354,6 @@ export const menu: MenuSection[] = [
           'wechselndes Tagesangebot, auf Wunsch mit einer Kugel Vanilleeis (+ 1,30 €)',
         price: [2.8, 3.8, 4],
         diet: 'vegetarisch',
-        highlight: true,
       },
     ],
   },
@@ -372,7 +366,6 @@ export const menu: MenuSection[] = [
         description: 'Frischkäse, Birne, Walnüsse, Honig (vegan möglich)',
         price: 6.5,
         diet: 'vegetarisch',
-        highlight: true,
       },
       {
         name: 'Klässi',
@@ -421,6 +414,30 @@ export function formatPrice(price: MenuItem['price']) {
   return `${prices.map((p) => euro.format(p)).join(' / ')} €`;
 }
 
-export const menuHighlightItems = menu.flatMap((s) =>
-  s.items.filter((i) => i.highlight).map((i) => ({ ...i, section: s.title }))
-);
+/** Lieblinge für die Startseite, gesucht nach Namen (Google liefert keine Markierung). */
+const highlightNames = [
+  'flat white',
+  'iced matcha berry latte',
+  'chai latte',
+  'gelber smoothie',
+  'espresso tini',
+  'bananenbrot',
+  'kuchen',
+  'abate',
+];
+
+export function highlightsOf(menu: MenuSection[]) {
+  const all = menu.flatMap((s) =>
+    s.items.map((item) => ({ ...item, section: s.title }))
+  );
+  return highlightNames.flatMap((name) => {
+    const item = all.find((i) => i.name.toLowerCase() === name);
+    return item ? [item] : [];
+  });
+}
+
+/** Aktuelle Karte aus dem letzten Google-Abgleich, sonst der Rückfall. */
+export async function getMenu(): Promise<MenuSection[]> {
+  const stored = await readJson<StoredMenu>(menuFile());
+  return stored?.sections.length ? stored.sections : fallbackMenu;
+}

@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import type { Menu, WithContext } from 'schema-dts';
 import { Flower, Squiggle } from '@/components/Doodles';
 import { JsonLd } from '@/components/JsonLd';
-import { formatPrice, menu } from '@/lib/menu';
+import { formatPrice, getMenu, type MenuSection } from '@/lib/menu';
 import { site } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -20,7 +20,10 @@ const sectionColors = [
   'bg-butter-soft',
 ];
 
-function menuSchema(): WithContext<Menu> {
+// Die Karte kommt aus dem Google-Unternehmensprofil und kann sich jederzeit ändern.
+export const dynamic = 'force-dynamic';
+
+function menuSchema(menu: MenuSection[]): WithContext<Menu> {
   return {
     '@context': 'https://schema.org',
     '@type': 'Menu',
@@ -52,10 +55,11 @@ function menuSchema(): WithContext<Menu> {
   };
 }
 
-export default function Speisekarte() {
+export default async function Speisekarte() {
+  const menu = await getMenu();
   return (
     <div className='mx-auto max-w-6xl px-5 pt-12'>
-      <JsonLd data={menuSchema()} />
+      <JsonLd data={menuSchema(menu)} />
 
       <header className='flex flex-wrap items-end justify-between gap-6'>
         <div>
