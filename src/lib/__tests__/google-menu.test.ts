@@ -73,7 +73,7 @@ describe('Speisekarte aus Google', () => {
       price: 4.5,
     });
     expect(sections[0].items[1]).toMatchObject({
-      name: 'Espresso Doppio',
+      name: 'Espresso doppio',
       label: 'ESPRESSO doppio',
       price: 3.2,
     });
@@ -123,5 +123,8 @@ describe('Speisekarte aus Google', () => {
     );
     expect(titleCase('MINZE - INGWER -ORANGE')).toBe('Minze - Ingwer -Orange');
     expect(titleCase('CHAI TEA / KARAFFE')).toBe('Chai Tea / Karaffe');
+    expect(titleCase('CROISSANT mit butter / marmelade')).toBe(
+      'Croissant mit butter / marmelade'
+    );
   });
 });

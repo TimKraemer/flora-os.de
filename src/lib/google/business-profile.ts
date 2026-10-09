@@ -167,16 +167,28 @@ const sharpS: [RegExp, string][] = [
   [/strasse/gu, 'straße'],
 ];
 
-/** „LATTE MACCHIATO“ → „Latte Macchiato“, „HEISSES“ → „Heißes“. */
+/**
+ * „LATTE MACCHIATO“ → „Latte Macchiato“, „HEISSES“ → „Heißes“. Nur Wörter in
+ * Großbuchstaben werden umgewandelt; was bei Google klein steht
+ * („ESPRESSO doppio“, „CROISSANT mit butter“), bleibt so.
+ */
 export function titleCase(text: string) {
-  let lower = text.trim().toLocaleLowerCase('de-DE');
-  for (const [pattern, replacement] of sharpS) {
-    lower = lower.replace(pattern, replacement);
-  }
-  return lower.replace(
-    /(^|[\s(/-])(\p{L})/gu,
-    (_, sep, ch) => sep + ch.toLocaleUpperCase('de-DE')
-  );
+  return text
+    .trim()
+    .split(/(\s+)/)
+    .map((word) => {
+      const upper = word.toLocaleUpperCase('de-DE');
+      if (word !== upper || !/\p{L}/u.test(word)) return word;
+      let lower = word.toLocaleLowerCase('de-DE');
+      for (const [pattern, replacement] of sharpS) {
+        lower = lower.replace(pattern, replacement);
+      }
+      return lower.replace(
+        /(^|[(/-])(\p{L})/u,
+        (_, sep, ch) => sep + ch.toLocaleUpperCase('de-DE')
+      );
+    })
+    .join('');
 }
 
 /**
