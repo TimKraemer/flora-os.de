@@ -77,9 +77,12 @@ export type Row = {
   footnote?: boolean;
 };
 
-const priceSegments = (price: MenuItem['price']): Segment[] => [
-  { text: pdfPrice(price), bold: true },
-];
+/** Jeder Preis ein eigenes Stück, damit der letzte in der Preisspalte stehen kann. */
+const priceSegments = (price: MenuItem['price']): Segment[] =>
+  (Array.isArray(price) ? price : [price]).flatMap((p, i) => [
+    ...(i > 0 ? [{ text: ' / ', bold: true }] : []),
+    { text: pdfPrice(p), bold: true },
+  ]);
 
 /** Im Original stehen vegane Gerichte mit „(v)“ hinter der Beschreibung. */
 const withVegan = (text: string, vegan: boolean) =>
@@ -282,14 +285,16 @@ const segmentWidth = (seg: Segment, fonts: Fonts, m: Metrics) =>
     ? fonts.bold.widthOfTextAtSize(seg.text, m.price)
     : fonts.regular.widthOfTextAtSize(seg.text, m.text);
 
-/** Preis linksbündig in der Preisspalte; passt er nicht bis zum Rand, rechtsbündig am Rand. */
+/**
+ * Beginn der Preisangabe. Wie im Original steht der letzte Preis einer Zeile
+ * immer in der Preisspalte; Varianten davor („2,5 / doppio “) ragen nach links.
+ */
 function priceX(row: Row, kind: Kind, fonts: Fonts, m: Metrics) {
-  const { priceX: x, maxRight } = LAYOUT[kind];
-  const w = row.price.reduce(
-    (sum, seg) => sum + segmentWidth(seg, fonts, m),
-    0
-  );
-  return Math.min(x, maxRight - w);
+  const { priceX: column, maxRight } = LAYOUT[kind];
+  const widths = row.price.map((seg) => segmentWidth(seg, fonts, m));
+  const before = widths.slice(0, -1).reduce((sum, w) => sum + w, 0);
+  const last = widths.at(-1) ?? 0;
+  return Math.min(column, maxRight - last) - before;
 }
 
 /**
