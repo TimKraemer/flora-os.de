@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test';
 import { reviewsSchema } from '../google/business-profile';
-import { pickRandom, shortName, showcase, toReviews } from '../google/reviews';
+import {
+  originalText,
+  pickRandom,
+  shortName,
+  showcase,
+  toReviews,
+} from '../google/reviews';
 
 const long =
   'Sehr gemütliches Café mit tollem Hafer-Cappuccino und Bananenbrot.';
@@ -67,11 +73,18 @@ describe('Google-Bewertungen', () => {
     });
   });
 
-  test('zeigt nur Fünf-Sterne-Texte ohne Übersetzung', () => {
+  test('zeigt nur Fünf-Sterne-Texte passender Länge', () => {
     const reviews = toReviews(response);
-    expect(showcase(reviews).map((r) => r.id)).toEqual(['a']);
+    expect(showcase(reviews).map((r) => r.id)).toEqual(['a', 'e']);
+    expect(reviews[2].text).toBe(long);
     const short = { ...reviews[0], id: 'kurz', text: 'Super!' };
     expect(showcase([short])).toEqual([]);
+    const english = {
+      ...reviews[0],
+      id: 'en',
+      text: 'Best coffee I have had in such a long time. Very friendly place.',
+    };
+    expect(showcase([english])).toEqual([]);
   });
 
   test('wählt n verschiedene Einträge aus', () => {
@@ -82,5 +95,17 @@ describe('Google-Bewertungen', () => {
     expect(picked.every((p) => items.includes(p))).toBe(true);
     expect(pickRandom(items, 10)).toHaveLength(6);
     expect(pickRandom(items, 6, () => 0.999)).toEqual(items);
+  });
+
+  test('behält nur den Originaltext', () => {
+    expect(
+      originalText(
+        'Leckerer Kaffee!\n\n(Translated by Google)\nDelicious coffee!'
+      )
+    ).toBe('Leckerer Kaffee!');
+    expect(
+      originalText('(Translated by Google) Top Cafe\n\n(Original)\nTop Café')
+    ).toBe('Top Café');
+    expect(originalText('Ohne Übersetzung')).toBe('Ohne Übersetzung');
   });
 });

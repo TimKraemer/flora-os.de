@@ -40,12 +40,24 @@ export function shortName(displayName = '') {
     : capitalize(first);
 }
 
+/**
+ * Google hängt Übersetzungen in die Sprache des Kontos an den Text:
+ * „Original\n\n(Translated by Google)\nÜbersetzung“ oder umgekehrt
+ * „(Translated by Google) Übersetzung\n\n(Original)\nOriginal“. Wir zeigen
+ * nur das Original.
+ */
+export function originalText(comment: string) {
+  const original = comment.split('(Original)')[1];
+  if (original !== undefined) return original.trim();
+  return comment.split('(Translated by Google)')[0].trim();
+}
+
 /** Antwort von accounts.locations.reviews.list ohne Klarnamen und Fotos. */
 export function toReviews(
   response: Pick<z.infer<typeof reviewsSchema>, 'reviews'>
 ): Review[] {
   return response.reviews.flatMap((r) => {
-    const text = r.comment?.trim();
+    const text = r.comment && originalText(r.comment);
     const author = shortName(r.reviewer.displayName);
     if (!text || !author || r.reviewer.isAnonymous) return [];
     return [
@@ -66,10 +78,13 @@ export function toReviews(
  */
 const hidden = new Set<string>([]);
 
+/** Grobe Spracherkennung: deutsche Texte enthalten fast immer eins dieser Wörter. */
+const germanWords =
+  /(^|[^\p{L}])(und|der|die|das|ist|sehr|mit|ein|eine|ich|wir|nicht|für|auch|hier|zu)(?=$|[^\p{L}])/iu;
+
 /**
- * Bewertungen, die auf der Startseite stehen dürfen: fünf Sterne, kein von
- * Google übersetzter Text, lang genug für eine Aussage und kurz genug für
- * einen Zettel.
+ * Bewertungen, die auf der Startseite stehen dürfen: fünf Sterne, auf
+ * Deutsch, lang genug für eine Aussage und kurz genug für einen Zettel.
  */
 export function showcase(reviews: Review[]) {
   return reviews.filter(
@@ -78,7 +93,7 @@ export function showcase(reviews: Review[]) {
       r.rating === 5 &&
       r.text.length >= 60 &&
       r.text.length <= 420 &&
-      !/\((Translated by Google|Original)\)/.test(r.text)
+      germanWords.test(r.text)
   );
 }
 
