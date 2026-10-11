@@ -78,13 +78,16 @@ export function toReviews(
  */
 const hidden = new Set<string>([]);
 
-/** Grobe Spracherkennung: deutsche Texte enthalten fast immer eins dieser Wörter. */
-const germanWords =
-  /(^|[^\p{L}])(und|der|die|das|ist|sehr|mit|ein|eine|ich|wir|nicht|für|auch|hier|zu)(?=$|[^\p{L}])/iu;
+/**
+ * Grobe Spracherkennung: deutsche und englische Texte enthalten fast immer
+ * eins dieser Wörter.
+ */
+const commonWords =
+  /(^|[^\p{L}])(und|der|die|das|ist|sehr|mit|ein|eine|ich|wir|nicht|für|auch|hier|zu|the|and|is|was|very|with|for|this|good|great|nice)(?=$|[^\p{L}])/iu;
 
 /**
  * Bewertungen, die auf der Startseite stehen dürfen: fünf Sterne, auf
- * Deutsch, lang genug für eine Aussage und kurz genug für einen Zettel.
+ * Deutsch oder Englisch, lang genug für eine Aussage und kurz genug für einen Zettel.
  */
 export function showcase(reviews: Review[]) {
   return reviews.filter(
@@ -93,7 +96,7 @@ export function showcase(reviews: Review[]) {
       r.rating === 5 &&
       r.text.length >= 60 &&
       r.text.length <= 420 &&
-      germanWords.test(r.text)
+      commonWords.test(r.text)
   );
 }
 

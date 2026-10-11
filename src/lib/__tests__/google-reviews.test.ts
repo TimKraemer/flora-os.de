@@ -84,7 +84,13 @@ describe('Google-Bewertungen', () => {
       id: 'en',
       text: 'Best coffee I have had in such a long time. Very friendly place.',
     };
-    expect(showcase([english])).toEqual([]);
+    expect(showcase([english])).toEqual([english]);
+    const russian = {
+      ...reviews[0],
+      id: 'ru',
+      text: 'Светлое, просторное кафе с приятными людьми, вкусными напитками.',
+    };
+    expect(showcase([russian])).toEqual([]);
   });
 
   test('wählt n verschiedene Einträge aus', () => {

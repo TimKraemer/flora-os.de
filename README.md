@@ -74,7 +74,7 @@ Mit denselben Zugangsdaten holt der Server alle sechs Stunden die Bewertungen
 (`reviews.list`) und legt sie in `data/google/reviews.json` ab, Namen schon auf
 Vorname und Initiale gekürzt. Die englische Übersetzung, die Google an
 deutsche Texte hängt, schneidet er ab. Die Startseite zeigt bei jedem Aufruf drei
-zufällige deutsche Fünf-Sterne-Bewertungen mit 60 bis 420 Zeichen Text
+zufällige deutsche oder englische Fünf-Sterne-Bewertungen mit 60 bis 420 Zeichen Text
 (`src/lib/google/reviews.ts`). Soll eine Bewertung nicht erscheinen, ihre ID
 dort in `hidden` eintragen.
 
