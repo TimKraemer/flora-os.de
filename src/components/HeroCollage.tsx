@@ -8,9 +8,16 @@ const layout = [
   'left-[22%] bottom-0 w-[54%] -rotate-1 z-30',
 ];
 
-/** Drei neueste Instagram-Fotos als hingeworfene Polaroids, sonst die Lampe. */
+/**
+ * Drei neueste Instagram-Fotos als hingeworfene Polaroids, sonst die Lampe.
+ * Das neueste liegt vorn (letzter Layout-Platz, höchster z-index). Sortiert wird
+ * nach Datum, weil angepinnte Beiträge im Feed vor neueren stehen können.
+ */
 export function HeroCollage({ feed }: { feed: InstagramFeed | null }) {
-  const posts = feed?.posts.slice(0, 3) ?? [];
+  const posts = [...(feed?.posts ?? [])]
+    .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    .slice(0, 3)
+    .reverse();
   if (posts.length < 3) {
     return <LampAndCup className='mx-auto w-full max-w-md' />;
   }
