@@ -68,6 +68,15 @@ Zugangsdaten in `/opt/services/flora/.env.production`: `GOOGLE_BP_CLIENT_ID`,
 (Passwortänderung, Widerruf im Google-Konto), neu holen mit
 `bun scripts/google-business-login.ts` und den Wert dort ersetzen.
 
+## Bewertungen aus Google
+
+Mit denselben Zugangsdaten holt der Server alle sechs Stunden die Bewertungen
+(`reviews.list`) und legt sie in `data/google/reviews.json` ab, Namen schon auf
+Vorname und Initiale gekürzt. Die Startseite zeigt bei jedem Aufruf drei
+zufällige Fünf-Sterne-Bewertungen mit 60 bis 420 Zeichen Text
+(`src/lib/google/reviews.ts`). Soll eine Bewertung nicht erscheinen, ihre ID
+dort in `hidden` eintragen.
+
 ## KI und Suchmaschinen
 
 - `/llms.txt` und `/llm.txt`: Kurzfassung nach llmstxt.org mit aktuellen Öffnungszeiten

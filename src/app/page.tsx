@@ -14,13 +14,16 @@ import { InstagramSection } from '@/components/instagram/InstagramSection';
 import { JsonLd } from '@/components/JsonLd';
 import { OpeningHours } from '@/components/OpeningHours';
 import { OpenStatusBadge } from '@/components/OpenStatusBadge';
+import { ReviewsSection } from '@/components/ReviewsSection';
+import { readReviews } from '@/lib/google/review-sync';
 import { readFeed } from '@/lib/instagram/store';
 import { formatPrice, getMenu, highlightsOf } from '@/lib/menu';
 import { getOpeningHours, groupByDay } from '@/lib/opening-hours';
 import { faq, fullAddress, site } from '@/lib/site';
 import { cafeSchema } from '@/lib/structured-data';
 
-// Öffnungszeiten und Instagram-Feed ändern sich laufend; die Daten selbst sind gecacht.
+// Öffnungszeiten und Instagram-Feed ändern sich laufend, die Bewertungen werden
+// bei jedem Aufruf neu ausgelost; die Daten selbst sind gecacht.
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { alternates: { canonical: '/' } };
@@ -46,10 +49,11 @@ const stickers = [
 ];
 
 export default async function HomePage() {
-  const [periods, feed, menu] = await Promise.all([
+  const [periods, feed, menu, reviews] = await Promise.all([
     getOpeningHours(),
     readFeed(),
     getMenu(),
+    readReviews(),
   ]);
 
   return (
@@ -175,8 +179,10 @@ export default async function HomePage() {
         <Wave className='text-cream' flip />
       </section>
 
+      <ReviewsSection data={reviews} />
+
       {/* Zeiten und Anfahrt */}
-      <div className='mx-auto mt-16 grid max-w-6xl gap-10 px-5 md:grid-cols-2 md:gap-14'>
+      <div className='mx-auto mt-24 grid max-w-6xl gap-10 px-5 md:grid-cols-2 md:gap-14'>
         <section id='zeiten' aria-labelledby='zeiten-title' className='reveal'>
           <p className='kicker'>Komm vorbei</p>
           <h2 id='zeiten-title' className='section-title mb-8'>

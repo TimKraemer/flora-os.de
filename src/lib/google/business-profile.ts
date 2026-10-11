@@ -272,3 +272,47 @@ export function toMenuSections(
     })
     .filter((s) => s.items.length > 0);
 }
+
+export const reviewsSchema = z.object({
+  reviews: z
+    .array(
+      z.object({
+        reviewId: z.string(),
+        reviewer: z
+          .object({
+            displayName: z.string().optional(),
+            isAnonymous: z.boolean().optional(),
+          })
+          .default({}),
+        starRating: z.string(),
+        comment: z.string().optional(),
+        createTime: z.string(),
+      })
+    )
+    .default([]),
+  averageRating: z.number().optional(),
+  totalReviewCount: z.number().optional(),
+  nextPageToken: z.string().optional(),
+});
+
+/** Alle Bewertungen des Profils, seitenweise (höchstens 50 pro Abruf). */
+export async function fetchReviews(token: string, location: string) {
+  const reviews: z.infer<typeof reviewsSchema>['reviews'] = [];
+  let pageToken: string | undefined;
+  let summary: { averageRating?: number; totalReviewCount?: number } = {};
+  do {
+    const url = new URL(`${V4_URL}/${location}/reviews`);
+    url.search = new URLSearchParams({
+      pageSize: '50',
+      ...(pageToken ? { pageToken } : {}),
+    }).toString();
+    const page = reviewsSchema.parse(await call(url.toString(), auth(token)));
+    reviews.push(...page.reviews);
+    summary = {
+      averageRating: page.averageRating ?? summary.averageRating,
+      totalReviewCount: page.totalReviewCount ?? summary.totalReviewCount,
+    };
+    pageToken = page.nextPageToken;
+  } while (pageToken);
+  return { reviews, ...summary };
+}

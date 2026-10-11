@@ -115,17 +115,30 @@ export default function Datenschutz() {
         EU-Kommission zum EU-US Data Privacy Framework.
       </p>
 
-      <h2>7. Öffnungszeiten und Links zu Google Maps</h2>
+      <h2>7. Öffnungszeiten, Bewertungen und Links zu Google Maps</h2>
       <p>
-        Die Öffnungszeiten holt unser Server bei Google ab. Daten von Ihnen
-        werden dabei nicht übertragen. Die Links „Route in Google Maps“ führen
-        zu Google. Erst nach dem Klick verarbeitet die Google Ireland Limited,
-        Gordon House, Barrow Street, Dublin 4, Irland, Ihre Daten nach ihrer
-        eigenen Datenschutzerklärung:{' '}
+        Die Öffnungszeiten und Bewertungen holt unser Server bei Google ab.
+        Daten von Ihnen werden dabei nicht übertragen. Die Links „Route in
+        Google Maps“ und „Alle Bewertungen bei Google Maps“ führen zu Google.
+        Erst nach dem Klick verarbeitet die Google Ireland Limited, Gordon
+        House, Barrow Street, Dublin 4, Irland, Ihre Daten nach ihrer eigenen
+        Datenschutzerklärung:{' '}
         <a href='https://policies.google.com/privacy' {...ext}>
           policies.google.com/privacy
         </a>
         .
+      </p>
+      <p>
+        Einige Bewertungen, die Gäste öffentlich in unserem
+        Google-Unternehmensprofil geschrieben haben, stehen auf unserer
+        Startseite. Wir übernehmen Text, Sterne, Datum, Vornamen und den
+        Anfangsbuchstaben des Nachnamens, keine vollständigen Namen und keine
+        Profilbilder. Rechtsgrundlage ist unser berechtigtes Interesse, neuen
+        Gästen einen Eindruck vom Café zu geben (Art. 6 Abs. 1 lit. f DSGVO).
+        Wird eine Bewertung bei Google geändert oder gelöscht, übernimmt unser
+        Server das spätestens nach sechs Stunden. Wenn Sie nicht möchten, dass
+        Ihre Bewertung hier erscheint, genügt eine kurze Nachricht an{' '}
+        <a href={`mailto:${site.email}`}>{site.email}</a>.
       </p>
 
       <h2>8. Schriftarten</h2>
