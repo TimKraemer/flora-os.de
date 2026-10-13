@@ -1,10 +1,10 @@
 import { FileDown } from 'lucide-react';
 import type { Metadata } from 'next';
-import type { Menu, WithContext } from 'schema-dts';
 import { Flower, Squiggle } from '@/components/Doodles';
 import { JsonLd } from '@/components/JsonLd';
-import { formatPrice, getMenu, type MenuSection } from '@/lib/menu';
+import { formatPrice, getMenu } from '@/lib/menu';
 import { site } from '@/lib/site';
+import { menuSchema } from '@/lib/structured-data';
 
 export const metadata: Metadata = {
   title: 'Speisekarte',
@@ -22,38 +22,6 @@ const sectionColors = [
 
 // Die Karte kommt aus dem Google-Unternehmensprofil und kann sich jederzeit ändern.
 export const dynamic = 'force-dynamic';
-
-function menuSchema(menu: MenuSection[]): WithContext<Menu> {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Menu',
-    name: `Speisekarte ${site.name}`,
-    inLanguage: 'de-DE',
-    url: `${site.url}/speisekarte`,
-    hasMenuSection: menu.map((section) => ({
-      '@type': 'MenuSection',
-      name: section.title,
-      hasMenuItem: section.items.map((item) => ({
-        '@type': 'MenuItem',
-        name: item.name,
-        description: item.description,
-        ...(item.diet && {
-          suitableForDiet:
-            item.diet === 'vegan'
-              ? 'https://schema.org/VeganDiet'
-              : 'https://schema.org/VegetarianDiet',
-        }),
-        offers: (Array.isArray(item.price) ? item.price : [item.price]).map(
-          (price) => ({
-            '@type': 'Offer',
-            price: price.toFixed(2),
-            priceCurrency: 'EUR',
-          })
-        ),
-      })),
-    })),
-  };
-}
 
 export default async function Speisekarte() {
   const menu = await getMenu();

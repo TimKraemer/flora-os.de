@@ -111,6 +111,6 @@ jobs:
 
       - name: Produktion erreichbar?
         run: |
-          for url in https://flora-os.de/api/health https://flora-os.de/ https://flora-os.de/llms.txt; do
+          for url in https://flora-os.de/api/health https://flora-os.de/ https://flora-os.de/llms.txt https://flora-os.de/Speisekarte.pdf; do
             curl -fsS --retry 5 --retry-delay 3 -o /dev/null -w "$url → %{http_code}\n" "$url"
           done

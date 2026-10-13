@@ -2,8 +2,9 @@ import { describe, expect, test } from 'bun:test';
 import {
   groupByDay,
   openStatus,
-  parsePeriods,
+  parseHours,
   toSchema,
+  toSpecialSchema,
 } from '../opening-hours';
 
 // Ausschnitt einer echten Antwort der Places API (Dienstag geschlossen).
@@ -19,17 +20,45 @@ const response = {
   },
 };
 
+// Woche mit Heiligabend (Donnerstag, sonst 09:30–18:00) und verkürztem Silvester-Vorabend.
+const holidayWeek = {
+  result: {
+    opening_hours: {
+      periods: [
+        ...response.result.opening_hours.periods,
+        { open: { day: 4, time: '0930' }, close: { day: 4, time: '1800' } },
+      ],
+    },
+    current_opening_hours: {
+      periods: [
+        {
+          open: { day: 3, time: '0930', date: '2026-12-23' },
+          close: { day: 3, time: '1400', date: '2026-12-23' },
+        },
+      ],
+      special_days: [
+        { date: '2026-12-23', exceptional_hours: true },
+        { date: '2026-12-24', exceptional_hours: true },
+      ],
+    },
+  },
+};
+const periods = parseHours(response).regular;
+
 describe('Öffnungszeiten', () => {
   test('wandelt Google-Zeiten in HH:MM', () => {
-    expect(parsePeriods(response)).toEqual([
-      { day: 0, open: '10:00', close: '18:00' },
-      { day: 1, open: '09:30', close: '18:00' },
-      { day: 3, open: '09:30', close: '18:00' },
-    ]);
+    expect(parseHours(response)).toEqual({
+      regular: [
+        { day: 0, open: '10:00', close: '18:00' },
+        { day: 1, open: '09:30', close: '18:00' },
+        { day: 3, open: '09:30', close: '18:00' },
+      ],
+      special: [],
+    });
   });
 
   test('beginnt mit Montag und markiert Ruhetage', () => {
-    const days = groupByDay(parsePeriods(response));
+    const days = groupByDay(periods);
     expect(days[0]).toEqual({
       day: 1,
       name: 'Montag',
@@ -40,7 +69,7 @@ describe('Öffnungszeiten', () => {
   });
 
   test('erzeugt schema.org OpeningHoursSpecification', () => {
-    const [sunday] = toSchema(parsePeriods(response));
+    const [sunday] = toSchema(periods);
     expect(sunday).toMatchObject({
       dayOfWeek: 'https://schema.org/Sunday',
       opens: '10:00',
@@ -49,12 +78,36 @@ describe('Öffnungszeiten', () => {
   });
 
   test('lehnt unerwartete Antworten ab', () => {
-    expect(() => parsePeriods({ status: 'REQUEST_DENIED' })).toThrow();
+    expect(() => parseHours({ status: 'REQUEST_DENIED' })).toThrow();
+  });
+
+  test('übernimmt Sonderzeiten, geschlossen als 00:00–00:00', () => {
+    const hours = parseHours(holidayWeek);
+    expect(hours.special).toEqual([
+      {
+        date: '2026-12-23',
+        periods: [{ day: 3, open: '09:30', close: '14:00' }],
+      },
+      { date: '2026-12-24', periods: [] },
+    ]);
+    expect(toSpecialSchema(hours.special)[1]).toEqual({
+      '@type': 'OpeningHoursSpecification',
+      validFrom: '2026-12-24',
+      validThrough: '2026-12-24',
+      opens: '00:00',
+      closes: '00:00',
+    });
+  });
+
+  test('Badge kennt Heiligabend als geschlossen', () => {
+    const { regular, current = [] } = parseHours(holidayWeek);
+    const noon = new Date('2026-12-24T12:00:00+01:00');
+    expect(openStatus(regular, noon).open).toBe(true);
+    expect(openStatus(current, noon).open).toBe(false);
   });
 });
 
 describe('Öffnungsstatus', () => {
-  const periods = parsePeriods(response);
   // 2026-09-28 ist ein Montag; Sommerzeit, also UTC+2.
   const at = (iso: string) => openStatus(periods, new Date(iso)).label;
 

@@ -2,8 +2,6 @@ import path from 'node:path';
 import { dataDir, readJson } from '@/lib/json-store';
 import type { InstagramFeed } from './types';
 
-export { readJson, writeJsonAtomic } from '@/lib/json-store';
-
 export const instagramDir = () => path.join(dataDir(), 'instagram');
 export const mediaDir = () => path.join(instagramDir(), 'media');
 

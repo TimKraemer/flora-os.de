@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { MenuItem, MenuSection } from '@/lib/menu';
+import { site } from '@/lib/site';
 
 /**
  * Google Business Profile API (Projekt „flora-os“, freigeschaltet seit
@@ -101,6 +102,15 @@ export async function findLocation(
     if (match) return `${account.name}/${match.name}`;
   }
   throw new Error(`Profil „${title}“ nicht gefunden`);
+}
+
+/** Profilpfad aus .env, sonst aus dem letzten Abgleich, sonst per Suche. */
+export async function locationFor(token: string, previous?: string) {
+  return (
+    process.env.GOOGLE_BP_LOCATION ||
+    previous ||
+    findLocation(token, site.name, site.address.street)
+  );
 }
 
 const labelSchema = z.object({

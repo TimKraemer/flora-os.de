@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
-import type { MenuItem } from '../menu';
-import { pdfPrice, rowsOf, splitLabel } from '../menu-pdf';
+import { PDFDocument } from 'pdf-lib';
+import { fallbackMenu, type MenuItem } from '../menu';
+import { buildMenuPdf, pdfPrice, rowsOf, splitLabel } from '../menu-pdf';
 
 const item = (
   label: string,
@@ -103,4 +104,10 @@ describe('Kennzeichnungen wie im Original', () => {
     ]);
     expect(priceText(row)).toBe('2,5 / doppio 3,2');
   });
+});
+
+test('erzeugt die ganze PDF aus Vorlage und Schriften', async () => {
+  const doc = await PDFDocument.load(await buildMenuPdf(fallbackMenu));
+  // Deckblatt und Begrüßung aus der Vorlage, danach mindestens eine Kartenseite
+  expect(doc.getPageCount()).toBeGreaterThan(2);
 });

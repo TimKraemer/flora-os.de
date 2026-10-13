@@ -18,7 +18,7 @@ import { ReviewsSection } from '@/components/ReviewsSection';
 import { readReviews } from '@/lib/google/review-sync';
 import { readFeed } from '@/lib/instagram/store';
 import { formatPrice, getMenu, highlightsOf } from '@/lib/menu';
-import { getOpeningHours, groupByDay } from '@/lib/opening-hours';
+import { getOpeningHours, groupByDay, specialLines } from '@/lib/opening-hours';
 import { faq, fullAddress, site } from '@/lib/site';
 import { cafeSchema } from '@/lib/structured-data';
 
@@ -49,7 +49,7 @@ const stickers = [
 ];
 
 export default async function HomePage() {
-  const [periods, feed, menu, reviews] = await Promise.all([
+  const [hours, feed, menu, reviews] = await Promise.all([
     getOpeningHours(),
     readFeed(),
     getMenu(),
@@ -58,7 +58,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <JsonLd data={cafeSchema(periods)} />
+      <JsonLd data={cafeSchema(hours)} />
 
       {/* Hero */}
       <section
@@ -82,9 +82,10 @@ export default async function HomePage() {
             und eine Tagessuppe. Mitten im Katharinenviertel, in der
             Augustenburger Straße.
           </p>
-          {periods && (
+          {hours && (
             <div className='mt-6'>
-              <OpenStatusBadge periods={periods} />
+              {/* aktuelle Woche, damit Feiertage und Urlaub als geschlossen gelten */}
+              <OpenStatusBadge periods={hours.current ?? hours.regular} />
             </div>
           )}
           <div className='mt-8 flex flex-wrap items-center gap-x-6 gap-y-3'>
@@ -192,8 +193,20 @@ export default async function HomePage() {
             <p className='mb-4 border-b-2 border-dashed border-ink/20 pb-3 text-center font-mono text-xs tracking-widest text-ink/60 uppercase'>
               Café Flora · {site.address.street}
             </p>
-            {periods ? (
-              <OpeningHours days={groupByDay(periods)} />
+            {hours?.regular.length ? (
+              <>
+                <OpeningHours days={groupByDay(hours.regular)} />
+                {hours.special.length > 0 && (
+                  <div className='mt-4 border-t-2 border-dashed border-ink/20 pt-3 font-mono text-[0.95rem]'>
+                    <p className='font-bold'>Abweichende Zeiten</p>
+                    <ul className='mt-1 space-y-1'>
+                      {specialLines(hours.special).map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
             ) : (
               <p>
                 Unsere aktuellen Öffnungszeiten findest du bei{' '}

@@ -1,12 +1,11 @@
 import path from 'node:path';
 import { dataDir, readJson, writeJsonAtomic } from '@/lib/json-store';
 import type { MenuSection } from '@/lib/menu';
-import { site } from '@/lib/site';
 import {
   accessToken,
   credentials,
   fetchFoodMenus,
-  findLocation,
+  locationFor,
   toMenuSections,
 } from './business-profile';
 
@@ -31,10 +30,7 @@ export async function syncMenu() {
   const previous = await readJson<StoredMenu>(menuFile());
   try {
     const token = await accessToken(c);
-    const location =
-      process.env.GOOGLE_BP_LOCATION ||
-      previous?.location ||
-      (await findLocation(token, site.name, site.address.street));
+    const location = await locationFor(token, previous?.location);
     const sections = toMenuSections(await fetchFoodMenus(token, location));
     if (sections.length === 0) throw new Error('Speisekarte ist leer');
     const stored: StoredMenu = {

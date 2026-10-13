@@ -1,11 +1,24 @@
-import type { CafeOrCoffeeShop, FAQPage, Graph } from 'schema-dts';
-import { type Period, toSchema } from './opening-hours';
+import type {
+  BreadcrumbList,
+  CafeOrCoffeeShop,
+  FAQPage,
+  Graph,
+  Menu,
+} from 'schema-dts';
+import type { MenuSection } from './menu';
+import { type OpeningHours, toSchema, toSpecialSchema } from './opening-hours';
 import { faq, site } from './site';
 
-export function cafeSchema(periods: Period[] | null): Graph {
+const CAFE_ID = `${site.url}/#cafe`;
+const MENU_ID = `${site.url}/speisekarte#menu`;
+
+/** Was auf der Seite als Sticker und in den FAQ steht */
+const amenities = ['Hunde willkommen', 'Zum Mitnehmen', 'Vegane Optionen'];
+
+export function cafeSchema(hours: OpeningHours | null): Graph {
   const cafe: CafeOrCoffeeShop = {
     '@type': 'CafeOrCoffeeShop',
-    '@id': `${site.url}/#cafe`,
+    '@id': CAFE_ID,
     name: site.name,
     alternateName: site.title,
     description: site.description,
@@ -14,9 +27,15 @@ export function cafeSchema(periods: Period[] | null): Graph {
     logo: `${site.url}/favicon/android-chrome-512x512.png`,
     email: site.email,
     priceRange: site.priceRange,
+    currenciesAccepted: 'EUR',
     servesCuisine: ['Kaffee', 'Kuchen', 'Frühstück', 'Snacks'],
-    menu: `${site.url}/speisekarte`,
-    hasMenu: `${site.url}/speisekarte`,
+    hasMenu: { '@id': MENU_ID },
+    acceptsReservations: false,
+    amenityFeature: amenities.map((name) => ({
+      '@type': 'LocationFeatureSpecification',
+      name,
+      value: true,
+    })),
     address: {
       '@type': 'PostalAddress',
       streetAddress: site.address.street,
@@ -30,14 +49,17 @@ export function cafeSchema(periods: Period[] | null): Graph {
       latitude: site.geo.latitude,
       longitude: site.geo.longitude,
     },
+    containedInPlace: {
+      '@type': 'Place',
+      name: `Katharinenviertel, ${site.address.city}`,
+    },
     hasMap: site.googleMapsUrl,
     sameAs: [site.instagram.url, site.googleMapsUrl],
-    ...(periods?.length
-      ? {
-          openingHoursSpecification: toSchema(periods).map(
-            ({ '@context': _, ...rest }) => rest
-          ),
-        }
+    ...(hours?.regular.length
+      ? { openingHoursSpecification: toSchema(hours.regular) }
+      : {}),
+    ...(hours?.special.length
+      ? { specialOpeningHoursSpecification: toSpecialSchema(hours.special) }
       : {}),
   };
 
@@ -60,10 +82,68 @@ export function cafeSchema(periods: Period[] | null): Graph {
         url: site.url,
         name: site.title,
         inLanguage: 'de-DE',
-        publisher: { '@id': `${site.url}/#cafe` },
+        publisher: { '@id': CAFE_ID },
       },
       cafe,
       faqPage,
+    ],
+  };
+}
+
+/** Speisekarte mit Preisen, verknüpft mit dem Café von der Startseite. */
+export function menuSchema(menu: MenuSection[]): Graph {
+  const url = `${site.url}/speisekarte`;
+  const menuNode: Menu = {
+    '@type': 'Menu',
+    '@id': MENU_ID,
+    name: `Speisekarte ${site.name}`,
+    inLanguage: 'de-DE',
+    url,
+    hasMenuSection: menu.map((section) => ({
+      '@type': 'MenuSection',
+      name: section.title,
+      ...(section.note && { description: section.note }),
+      hasMenuItem: section.items.map((item) => ({
+        '@type': 'MenuItem',
+        name: item.name,
+        description: item.description,
+        ...(item.diet && {
+          suitableForDiet:
+            item.diet === 'vegan'
+              ? 'https://schema.org/VeganDiet'
+              : 'https://schema.org/VegetarianDiet',
+        }),
+        offers: (Array.isArray(item.price) ? item.price : [item.price]).map(
+          (price) => ({
+            '@type': 'Offer',
+            price: price.toFixed(2),
+            priceCurrency: 'EUR',
+          })
+        ),
+      })),
+    })),
+  };
+
+  const breadcrumbs: BreadcrumbList = {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: site.name, item: site.url },
+      { '@type': 'ListItem', position: 2, name: 'Speisekarte', item: url },
+    ],
+  };
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      menuNode,
+      {
+        '@type': 'CafeOrCoffeeShop',
+        '@id': CAFE_ID,
+        name: site.name,
+        url: site.url,
+        hasMenu: { '@id': MENU_ID },
+      },
+      breadcrumbs,
     ],
   };
 }

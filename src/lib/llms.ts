@@ -1,18 +1,21 @@
 import type { InstagramFeed } from './instagram/types';
 import { formatPrice, type MenuSection } from './menu';
-import { groupByDay, type Period } from './opening-hours';
+import { groupByDay, type OpeningHours, specialLines } from './opening-hours';
 import { faq, fullAddress, site } from './site';
 
-function hoursBlock(periods: Period[] | null) {
-  if (!periods?.length) {
+function hoursBlock(hours: OpeningHours | null) {
+  if (!hours?.regular.length) {
     return `Aktuelle Öffnungszeiten: ${site.googleMapsUrl}`;
   }
-  return groupByDay(periods)
-    .map(
-      (d) =>
-        `- ${d.name}: ${d.ranges.length ? `${d.ranges.join(', ')} Uhr` : 'geschlossen'}`
-    )
-    .join('\n');
+  const week = groupByDay(hours.regular).map(
+    (d) =>
+      `- ${d.name}: ${d.ranges.length ? `${d.ranges.join(', ')} Uhr` : 'geschlossen'}`
+  );
+  const special = specialLines(hours.special).map((line) => `- ${line}`);
+  return [
+    ...week,
+    ...(special.length ? ['', 'Abweichende Zeiten:', '', ...special] : []),
+  ].join('\n');
 }
 
 const dateFormat = new Intl.DateTimeFormat('de-DE', {
@@ -21,7 +24,7 @@ const dateFormat = new Intl.DateTimeFormat('de-DE', {
 });
 
 /** Kurzfassung nach https://llmstxt.org */
-export function llmsTxt(periods: Period[] | null) {
+export function llmsTxt(hours: OpeningHours | null) {
   return `# ${site.title}
 
 > ${site.description}
@@ -30,7 +33,7 @@ Café Flora ist ein Café in Osnabrück (Niedersachsen), geführt von ${site.own
 
 ## Öffnungszeiten
 
-${hoursBlock(periods)}
+${hoursBlock(hours)}
 
 ## Seiten
 
@@ -52,7 +55,7 @@ ${hoursBlock(periods)}
 }
 
 export function llmsFullTxt(
-  periods: Period[] | null,
+  hours: OpeningHours | null,
   feed: InstagramFeed | null,
   menu: MenuSection[]
 ) {
@@ -99,7 +102,7 @@ export function llmsFullTxt(
 
 ## Öffnungszeiten
 
-${hoursBlock(periods)}
+${hoursBlock(hours)}
 
 ## Speisekarte
 

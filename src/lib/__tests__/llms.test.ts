@@ -2,14 +2,18 @@ import { describe, expect, test } from 'bun:test';
 import { llmsFullTxt, llmsTxt } from '../llms';
 import { fallbackMenu } from '../menu';
 
-const periods = [{ day: 1, open: '09:30', close: '18:00' }];
+const hours = {
+  regular: [{ day: 1, open: '09:30', close: '18:00' }],
+  special: [{ date: '2026-12-24', periods: [] }],
+};
 
 describe('llms.txt', () => {
   test('folgt dem Aufbau von llmstxt.org', () => {
-    const text = llmsTxt(periods);
+    const text = llmsTxt(hours);
     expect(text.startsWith('# Café Flora Osnabrück\n\n> ')).toBe(true);
     expect(text).toContain('- Montag: 09:30–18:00 Uhr');
     expect(text).toContain('- Dienstag: geschlossen');
+    expect(text).toContain('- Donnerstag, 24. Dezember: geschlossen');
     expect(text).toContain('](https://flora-os.de/llms-full.txt)');
   });
 
@@ -21,7 +25,7 @@ describe('llms.txt', () => {
 
   test('übernimmt Instagram-Texte in die ausführliche Fassung', () => {
     const text = llmsFullTxt(
-      periods,
+      hours,
       {
         updatedAt: '2026-10-01T00:00:00Z',
         profile: { username: 'cafe_flora_osnabrueck', name: 'Café Flora' },

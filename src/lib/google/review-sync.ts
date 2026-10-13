@@ -1,11 +1,10 @@
 import path from 'node:path';
 import { dataDir, readJson, writeJsonAtomic } from '@/lib/json-store';
-import { site } from '@/lib/site';
 import {
   accessToken,
   credentials,
   fetchReviews,
-  findLocation,
+  locationFor,
 } from './business-profile';
 import { type StoredReviews, toReviews } from './reviews';
 
@@ -24,10 +23,7 @@ export async function syncReviews() {
   const previous = await readJson<StoredReviews>(reviewsFile());
   try {
     const token = await accessToken(c);
-    const location =
-      process.env.GOOGLE_BP_LOCATION ||
-      previous?.location ||
-      (await findLocation(token, site.name, site.address.street));
+    const location = await locationFor(token, previous?.location);
     const response = await fetchReviews(token, location);
     const stored: StoredReviews = {
       updatedAt: new Date().toISOString(),

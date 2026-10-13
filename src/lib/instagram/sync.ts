@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
+import { readJson, writeJsonAtomic } from '@/lib/json-store';
 import { site } from '@/lib/site';
 import {
   fetchPublicProfile,
@@ -9,14 +10,7 @@ import {
   parseProfile,
   type RawPost,
 } from './api';
-import {
-  feedFile,
-  instagramDir,
-  mediaDir,
-  readFeed,
-  readJson,
-  writeJsonAtomic,
-} from './store';
+import { feedFile, instagramDir, mediaDir, readFeed } from './store';
 import type { InstagramFeed, InstagramMedia } from './types';
 
 export const POST_LIMIT = 8;
