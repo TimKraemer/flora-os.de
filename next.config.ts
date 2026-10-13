@@ -36,8 +36,6 @@ const nextConfig: NextConfig = {
   // Vorlage und Schriften für die erzeugte Speisekarte (src/lib/menu-pdf.ts)
   outputFileTracingIncludes: { '/Speisekarte.pdf': ['./assets/**/*'] },
   turbopack: { root: import.meta.dirname },
-  // 8 KB CSS direkt ins HTML statt als blockierende Anfrage (schnellerer erster Text)
-  experimental: { inlineCss: true },
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },
