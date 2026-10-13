@@ -5,8 +5,10 @@
   --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
 
-  --color-primary: #607da5;
-  --color-primary-dark: #4a6489;
+  /* Logo-Blau; für Text und Buttons zu hell (Kontrast unter 4,5:1), dafür primary */
+  --color-brand: #607da5;
+  --color-primary: #4a6489;
+  --color-primary-dark: #3b5070;
   --color-blush: #fdf1ed;
   --color-petal: #fae1d8;
   --color-cream: #fffaf3;
@@ -17,6 +19,7 @@
   --color-matcha-dark: #56692f;
   --color-matcha-soft: #e8eed8;
   --color-berry: #d97a93;
+  --color-berry-dark: #a94963;
   --color-berry-soft: #f9dfe5;
   --color-butter: #f5d98c;
   --color-butter-soft: #fbf0cc;

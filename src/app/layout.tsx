@@ -21,6 +21,8 @@ const fraunces = Fraunces({
   style: ['normal', 'italic'],
   axes: ['SOFT', 'WONK', 'opsz'],
   variable: '--font-fraunces',
+  // 270 KB; vorab geladen verdrängt sie auf dem Handy den Fließtext (LCP). Lädt über das CSS.
+  preload: false,
 });
 
 const nav = [
@@ -97,7 +99,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             className='transition-transform duration-300 hover:-rotate-3'
             aria-label='Café Flora, zur Startseite'
           >
-            <Logo className='h-14 w-auto text-primary md:h-16' />
+            <Logo className='h-14 w-auto text-brand md:h-16' />
           </Link>
           <nav aria-label='Hauptnavigation'>
             <ul className='flex gap-1 text-[0.95rem] font-semibold'>

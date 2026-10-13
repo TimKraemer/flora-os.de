@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Flower, Squiggle } from '@/components/Doodles';
 import { JsonLd } from '@/components/JsonLd';
 import { formatPrice, getMenu } from '@/lib/menu';
+import { getOpeningHours } from '@/lib/opening-hours';
 import { site } from '@/lib/site';
 import { menuSchema } from '@/lib/structured-data';
 
@@ -24,10 +25,10 @@ const sectionColors = [
 export const dynamic = 'force-dynamic';
 
 export default async function Speisekarte() {
-  const menu = await getMenu();
+  const [menu, hours] = await Promise.all([getMenu(), getOpeningHours()]);
   return (
     <div className='mx-auto max-w-6xl px-5 pt-12'>
-      <JsonLd data={menuSchema(menu)} />
+      <JsonLd data={menuSchema(menu, hours)} />
 
       <header className='flex flex-wrap items-end justify-between gap-6'>
         <div>
@@ -107,13 +108,13 @@ export default async function Speisekarte() {
               ))}
             </ul>
             {section.note && (
-              <p className='mt-5 text-sm text-ink/70 italic'>{section.note}</p>
+              <p className='mt-5 text-sm text-ink/75 italic'>{section.note}</p>
             )}
           </section>
         ))}
       </div>
 
-      <p className='mt-6 text-sm text-ink/70'>
+      <p className='mt-6 text-sm text-ink/75'>
         Alle Preise in Euro inklusive Mehrwertsteuer. Bei mehreren Preisen gilt
         die Reihenfolge der Beschreibung (z. B. Espresso einfach / doppelt).
         Fragen zu Allergenen beantworten wir dir gern vor Ort.

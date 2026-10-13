@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { type OpenStatus, openStatus, type Period } from '@/lib/opening-hours';
+import { type OpenStatus, openStatus } from '@/lib/open-status';
+import type { Period } from '@/lib/opening-hours';
 
 /** „Jetzt geöffnet bis 18:00 Uhr“, im Browser berechnet und jede Minute aktualisiert. */
 export function OpenStatusBadge({ periods }: { periods: Period[] }) {

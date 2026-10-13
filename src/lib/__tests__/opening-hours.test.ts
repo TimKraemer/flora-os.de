@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
+import { openStatus } from '../open-status';
 import {
   groupByDay,
-  openStatus,
   parseHours,
   toSchema,
   toSpecialSchema,

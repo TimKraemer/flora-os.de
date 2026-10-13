@@ -142,7 +142,7 @@ export default async function HomePage() {
                   key={item.name}
                   className={`note flex flex-col ${noteColors[i % noteColors.length]}`}
                 >
-                  <span className='text-xs font-semibold tracking-widest text-ink/55 uppercase'>
+                  <span className='text-xs font-semibold tracking-widest text-ink/75 uppercase'>
                     {item.section}
                   </span>
                   <h3 className='mt-1 text-2xl leading-tight font-semibold'>
@@ -190,7 +190,7 @@ export default async function HomePage() {
             Öffnungszeiten
           </h2>
           <div className='receipt -rotate-1'>
-            <p className='mb-4 border-b-2 border-dashed border-ink/20 pb-3 text-center font-mono text-xs tracking-widest text-ink/60 uppercase'>
+            <p className='mb-4 border-b-2 border-dashed border-ink/20 pb-3 text-center font-mono text-xs tracking-widest text-ink/75 uppercase'>
               Café Flora · {site.address.street}
             </p>
             {hours?.regular.length ? (
@@ -221,7 +221,7 @@ export default async function HomePage() {
                 .
               </p>
             )}
-            <p className='mt-5 text-center font-mono text-xs text-ink/60'>
+            <p className='mt-5 text-center font-mono text-xs text-ink/75'>
               Reservierungen nehmen wir nicht an. Einfach vorbeikommen.
             </p>
           </div>

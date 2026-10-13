@@ -98,6 +98,7 @@ export function InstagramSection({ feed }: { feed: InstagramFeed | null }) {
               alt='Profilbild von Café Flora'
               width={56}
               height={56}
+              loading='lazy'
               className='size-14 shrink-0 rounded-2xl border-[3px] border-white object-cover shadow-[var(--shadow-paper)]'
             />
           )}
@@ -115,7 +116,7 @@ export function InstagramSection({ feed }: { feed: InstagramFeed | null }) {
             href={site.instagram.url}
             target='_blank'
             rel='noopener noreferrer'
-            className='btn bg-berry text-white hover:bg-[#c8667f]'
+            className='btn bg-berry-dark text-white hover:bg-primary-dark'
           >
             <InstagramIcon className='size-5' />
             Folgen

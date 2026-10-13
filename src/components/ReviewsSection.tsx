@@ -82,7 +82,7 @@ export function ReviewsSection({ data }: { data: StoredReviews | null }) {
               <blockquote className='mt-3 flex-1 leading-relaxed'>
                 <p>„{review.text}“</p>
               </blockquote>
-              <figcaption className='mt-5 text-sm text-ink/65'>
+              <figcaption className='mt-5 text-sm text-ink/75'>
                 <span className='font-display text-base font-semibold text-ink'>
                   {review.author}
                 </span>{' '}

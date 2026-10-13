@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { berlinClock, type DayHours } from '@/lib/opening-hours';
+import { berlinClock } from '@/lib/open-status';
+import type { DayHours } from '@/lib/opening-hours';
 
 /** Öffnungszeiten als Kassenbon; der heutige Tag wird im Browser markiert. */
 export function OpeningHours({ days }: { days: DayHours[] }) {

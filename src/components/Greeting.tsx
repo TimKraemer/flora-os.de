@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { berlinClock } from '@/lib/opening-hours';
+import { berlinClock } from '@/lib/open-status';
 
 function greetingFor(hour: number) {
   if (hour < 11) return 'Guten Morgen!';

@@ -15,8 +15,12 @@ const MENU_ID = `${site.url}/speisekarte#menu`;
 /** Was auf der Seite als Sticker und in den FAQ steht */
 const amenities = ['Hunde willkommen', 'Zum Mitnehmen', 'Vegane Optionen'];
 
-export function cafeSchema(hours: OpeningHours | null): Graph {
-  const cafe: CafeOrCoffeeShop = {
+/**
+ * Das Café mit allen Angaben. Steht auf jeder Seite mit Markup vollständig,
+ * weil Google @id-Verweise nicht seitenübergreifend auflöst.
+ */
+function cafeNode(hours: OpeningHours | null): CafeOrCoffeeShop {
+  return {
     '@type': 'CafeOrCoffeeShop',
     '@id': CAFE_ID,
     name: site.name,
@@ -62,7 +66,9 @@ export function cafeSchema(hours: OpeningHours | null): Graph {
       ? { specialOpeningHoursSpecification: toSpecialSchema(hours.special) }
       : {}),
   };
+}
 
+export function cafeSchema(hours: OpeningHours | null): Graph {
   const faqPage: FAQPage = {
     '@type': 'FAQPage',
     '@id': `${site.url}/#faq`,
@@ -84,14 +90,17 @@ export function cafeSchema(hours: OpeningHours | null): Graph {
         inLanguage: 'de-DE',
         publisher: { '@id': CAFE_ID },
       },
-      cafe,
+      cafeNode(hours),
       faqPage,
     ],
   };
 }
 
 /** Speisekarte mit Preisen, verknüpft mit dem Café von der Startseite. */
-export function menuSchema(menu: MenuSection[]): Graph {
+export function menuSchema(
+  menu: MenuSection[],
+  hours: OpeningHours | null
+): Graph {
   const url = `${site.url}/speisekarte`;
   const menuNode: Menu = {
     '@type': 'Menu',
@@ -134,16 +143,6 @@ export function menuSchema(menu: MenuSection[]): Graph {
 
   return {
     '@context': 'https://schema.org',
-    '@graph': [
-      menuNode,
-      {
-        '@type': 'CafeOrCoffeeShop',
-        '@id': CAFE_ID,
-        name: site.name,
-        url: site.url,
-        hasMenu: { '@id': MENU_ID },
-      },
-      breadcrumbs,
-    ],
+    '@graph': [menuNode, cafeNode(hours), breadcrumbs],
   };
 }
