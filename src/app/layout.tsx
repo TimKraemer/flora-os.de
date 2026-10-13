@@ -16,8 +16,8 @@ const figtree = Figtree({
   display: 'swap',
   variable: '--font-figtree',
 });
-// Fraunces (Google Fonts, latin) mit festem SOFT 100 / WONK 1 und Gewicht 400–700,
-// erzeugt mit fontTools varLib.instancer: 130 statt 270 KB. Optische Größe bleibt variabel.
+// Fraunces (Google Fonts, latin) mit festem SOFT 100 / WONK 1 / opsz 48 und Gewicht
+// 400–700, erzeugt mit fontTools varLib.instancer: 76 statt 270 KB.
 const fraunces = localFont({
   src: [
     { path: '../../assets/fonts/Fraunces-Soft.woff2', style: 'normal' },
