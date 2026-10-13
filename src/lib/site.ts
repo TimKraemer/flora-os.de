@@ -7,8 +7,6 @@ export const site = {
     'Café Flora in Osnabrück: Kaffee, Matcha und Chai, hausgemachtes Bananenbrot, Kuchen, Bagels, Paninis und Tagessuppe. Im Katharinenviertel, Augustenburger Str. 4.',
   owner: 'Marie Hense',
   email: 'mail@flora-os.de',
-  phone: '+49 176 80003612',
-  phoneHref: 'tel:+4917680003612',
   address: {
     street: 'Augustenburger Str. 4',
     postalCode: '49078',

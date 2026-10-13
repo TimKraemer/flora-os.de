@@ -26,7 +26,7 @@ export function llmsTxt(periods: Period[] | null) {
 
 > ${site.description}
 
-Café Flora ist ein Café in Osnabrück (Niedersachsen), geführt von ${site.owner}. Adresse: ${fullAddress}. Telefon ${site.phone}, E-Mail ${site.email}.
+Café Flora ist ein Café in Osnabrück (Niedersachsen), geführt von ${site.owner}. Adresse: ${fullAddress}. E-Mail ${site.email}.
 
 ## Öffnungszeiten
 
@@ -90,7 +90,6 @@ export function llmsFullTxt(
 - Inhaberin: ${site.owner}
 - Adresse: ${fullAddress}, Deutschland
 - Koordinaten: ${site.geo.latitude}, ${site.geo.longitude}
-- Telefon: ${site.phone}
 - E-Mail: ${site.email}
 - Website: ${site.url}
 - Instagram: ${site.instagram.url}

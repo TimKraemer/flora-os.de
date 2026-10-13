@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Phone } from '@/components/Phone';
 import { site } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function Impressum() {
   return (
-    <article className='card prose-legal'>
+    <article className='prose-legal mx-auto max-w-3xl px-5 pt-12 pb-16'>
       <h1>Impressum</h1>
 
       <h2>Angaben gemäß § 5 DDG</h2>
@@ -26,7 +27,7 @@ export default function Impressum() {
 
       <h2>Kontakt</h2>
       <p>
-        Telefon: <a href={site.phoneHref}>{site.phone}</a>
+        Telefon: <Phone />
         <br />
         E-Mail: <a href={`mailto:${site.email}`}>{site.email}</a>
       </p>
@@ -44,6 +45,9 @@ export default function Impressum() {
         Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle
         teilzunehmen.
       </p>
+
+      <h2>Technische Betreuung</h2>
+      <p>Tim Krämer</p>
 
       <h2>Bildnachweis</h2>
       <p>

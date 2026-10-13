@@ -147,7 +147,7 @@
 
 @utility prose-legal {
   & h1 {
-    @apply mb-6 text-4xl font-semibold text-primary;
+    @apply mb-6 text-3xl font-semibold break-words hyphens-auto text-primary sm:text-4xl;
   }
   & h2 {
     @apply mt-10 mb-3 text-2xl font-semibold text-primary;

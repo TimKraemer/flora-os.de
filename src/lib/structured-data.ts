@@ -12,7 +12,6 @@ export function cafeSchema(periods: Period[] | null): Graph {
     url: site.url,
     image: `${site.url}/opengraph-image`,
     logo: `${site.url}/favicon/android-chrome-512x512.png`,
-    telephone: site.phone,
     email: site.email,
     priceRange: site.priceRange,
     servesCuisine: ['Kaffee', 'Kuchen', 'Frühstück', 'Snacks'],

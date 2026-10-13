@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Flower, Wave } from '@/components/Doodles';
 import { InstagramIcon } from '@/components/InstagramIcon';
 import { Logo } from '@/components/Logo';
+import { Phone } from '@/components/Phone';
 import { fullAddress, site } from '@/lib/site';
 import '@/styles/globals.css';
 
@@ -136,9 +137,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                 <br />
                 {fullAddress}
                 <br />
-                <a href={site.phoneHref} className='hover:underline'>
-                  {site.phone}
-                </a>
+                <Phone className='hover:underline' />
                 <br />
                 <a href={`mailto:${site.email}`} className='hover:underline'>
                   {site.email}

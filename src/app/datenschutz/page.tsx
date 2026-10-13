@@ -11,7 +11,7 @@ const ext = { target: '_blank', rel: 'noopener noreferrer' } as const;
 
 export default function Datenschutz() {
   return (
-    <article className='card prose-legal'>
+    <article className='prose-legal mx-auto max-w-3xl px-5 pt-12 pb-16'>
       <h1>Datenschutzerklärung</h1>
       <p>Stand: Oktober 2026</p>
 
@@ -21,8 +21,6 @@ export default function Datenschutz() {
         <br />
         {site.name}, {site.address.street}, {site.address.postalCode}{' '}
         {site.address.city}
-        <br />
-        Telefon: <a href={site.phoneHref}>{site.phone}</a>
         <br />
         E-Mail: <a href={`mailto:${site.email}`}>{site.email}</a>
       </p>
@@ -39,9 +37,8 @@ export default function Datenschutz() {
 
       <h2>3. Hosting und Server-Logfiles</h2>
       <p>
-        Die Website wird von der Seeger u. Krämer GbR (Scortex), Desteler Str.
-        43, 32351 Stemwede, technisch betreut. Sie läuft auf einem Server der
-        Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, im
+        Die Website wird von Tim Krämer technisch betreut. Sie läuft auf einem
+        Server der Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, im
         Rechenzentrum Falkenstein (Deutschland). Beide verarbeiten Daten nur in
         unserem Auftrag und nach unseren Weisungen (Art. 28 DSGVO).
       </p>
