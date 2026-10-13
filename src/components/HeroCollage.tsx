@@ -36,10 +36,8 @@ export function HeroCollage({ feed }: { feed: InstagramFeed | null }) {
             alt={altText(post)}
             width={640}
             height={800}
-            // Nur das vorderste Foto sofort; auf dem Handy liegt die Collage unter dem Text.
-            {...(i === 2
-              ? { fetchPriority: 'high' as const }
-              : { loading: 'lazy' as const })}
+            // Auf dem Handy liegt die Collage unter dem Text und soll ihn nicht ausbremsen.
+            loading='lazy'
             className='aspect-[4/5] w-full object-cover'
           />
         </a>

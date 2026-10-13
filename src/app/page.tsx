@@ -119,7 +119,8 @@ export default async function HomePage() {
       </section>
 
       {/* Karte */}
-      <section id='karte' aria-labelledby='karte-title' className='reveal'>
+      {/* ohne .reveal: liegt auf großen Bildschirmen beim Laden halb eingeblendet am Rand */}
+      <section id='karte' aria-labelledby='karte-title'>
         <Wave className='text-cream' />
         <div className='bg-cream px-5 py-14 md:py-20'>
           <div className='mx-auto max-w-6xl'>

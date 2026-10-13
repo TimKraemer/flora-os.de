@@ -57,9 +57,6 @@
   h2,
   h3 {
     @apply font-display;
-    font-variation-settings:
-      "SOFT" 100,
-      "WONK" 1;
     text-wrap: balance;
   }
 

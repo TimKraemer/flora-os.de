@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
-import { Figtree, Fraunces } from 'next/font/google';
+import { Figtree } from 'next/font/google';
+import localFont from 'next/font/local';
 import Link from 'next/link';
 import { Flower, Wave } from '@/components/Doodles';
 import { InstagramIcon } from '@/components/InstagramIcon';
@@ -15,13 +16,18 @@ const figtree = Figtree({
   display: 'swap',
   variable: '--font-figtree',
 });
-const fraunces = Fraunces({
-  subsets: ['latin'],
+// Fraunces (Google Fonts, latin) mit festem SOFT 100 / WONK 1 und Gewicht 400–700,
+// erzeugt mit fontTools varLib.instancer: 130 statt 270 KB. Optische Größe bleibt variabel.
+const fraunces = localFont({
+  src: [
+    { path: '../../assets/fonts/Fraunces-Soft.woff2', style: 'normal' },
+    { path: '../../assets/fonts/Fraunces-Soft-Italic.woff2', style: 'italic' },
+  ],
+  weight: '400 700',
   display: 'swap',
-  style: ['normal', 'italic'],
-  axes: ['SOFT', 'WONK', 'opsz'],
   variable: '--font-fraunces',
-  // 270 KB; vorab geladen verdrängt sie auf dem Handy den Fließtext (LCP). Lädt über das CSS.
+  adjustFontFallback: 'Times New Roman',
+  // Vorab geladen verdrängt sie auf dem Handy den Fließtext (LCP); lädt über das CSS.
   preload: false,
 });
 
