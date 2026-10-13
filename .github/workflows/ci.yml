@@ -114,3 +114,12 @@ jobs:
           for url in https://flora-os.de/api/health https://flora-os.de/ https://flora-os.de/llms.txt https://flora-os.de/Speisekarte.pdf; do
             curl -fsS --retry 5 --retry-delay 3 -o /dev/null -w "$url → %{http_code}\n" "$url"
           done
+
+      # IndexNow: Bing (Grundlage für Copilot und ChatGPT-Suche), Yandex, Seznam und
+      # Naver erfahren sofort von Änderungen. Der Schlüssel ist öffentlich
+      # (public/<key>.txt). Ein Fehler hier darf den Deploy nicht rot machen.
+      - name: Suchmaschinen benachrichtigen (IndexNow)
+        run: |
+          curl -sS -o /dev/null -w "IndexNow → %{http_code}\n" -X POST https://api.indexnow.org/indexnow \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            -d '{"host":"flora-os.de","key":"66dd907a7152c4ccccede4912df48248","keyLocation":"https://flora-os.de/66dd907a7152c4ccccede4912df48248.txt","urlList":["https://flora-os.de/","https://flora-os.de/speisekarte","https://flora-os.de/Speisekarte.pdf","https://flora-os.de/llms.txt","https://flora-os.de/llms-full.txt"]}' || true
