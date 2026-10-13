@@ -7,7 +7,7 @@ import type {
 } from 'schema-dts';
 import type { MenuSection } from './menu';
 import { type OpeningHours, toSchema, toSpecialSchema } from './opening-hours';
-import { faq, site } from './site';
+import { site } from './site';
 
 const CAFE_ID = `${site.url}/#cafe`;
 const MENU_ID = `${site.url}/speisekarte#menu`;
@@ -24,7 +24,7 @@ function cafeNode(hours: OpeningHours | null): CafeOrCoffeeShop {
     '@type': 'CafeOrCoffeeShop',
     '@id': CAFE_ID,
     name: site.name,
-    alternateName: site.title,
+    alternateName: [site.title, 'Flora Osnabrück', 'Flora Café Osnabrück'],
     description: site.description,
     url: site.url,
     image: `${site.url}/opengraph-image`,
@@ -68,11 +68,14 @@ function cafeNode(hours: OpeningHours | null): CafeOrCoffeeShop {
   };
 }
 
-export function cafeSchema(hours: OpeningHours | null): Graph {
+export function cafeSchema(
+  hours: OpeningHours | null,
+  questions: { q: string; a: string }[]
+): Graph {
   const faqPage: FAQPage = {
     '@type': 'FAQPage',
     '@id': `${site.url}/#faq`,
-    mainEntity: faq.map((f) => ({
+    mainEntity: questions.map((f) => ({
       '@type': 'Question',
       name: f.q,
       acceptedAnswer: { '@type': 'Answer', text: f.a },

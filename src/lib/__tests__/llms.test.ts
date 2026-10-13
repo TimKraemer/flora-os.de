@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { llmsFullTxt, llmsTxt } from '../llms';
-import { fallbackMenu } from '../menu';
+import { fallbackMenu, menuFaq } from '../menu';
 
 const hours = {
   regular: [{ day: 1, open: '09:30', close: '18:00' }],
@@ -47,5 +47,22 @@ describe('llms.txt', () => {
     expect(text).toContain('## Neueste Instagram-Beiträge');
     expect(text).toContain('Neuer Kuchen: Zitrone-Mohn');
     expect(text).toContain('- Flat White: 4,50 €');
+  });
+});
+
+describe('Fragen an KI-Assistenten', () => {
+  test('llms.txt nennt den Öffnungsstatus zum Zeitpunkt des Abrufs', () => {
+    // Montag, 28. September 2026, 10:00 Uhr in Osnabrück
+    const text = llmsTxt(hours, new Date('2026-09-28T10:00:00+02:00'));
+    expect(text).toContain(
+      'Stand beim Abruf (Montag, 28. September 2026 um 10:00 Uhr, Osnabrücker Zeit): Jetzt geöffnet bis 18:00 Uhr.'
+    );
+  });
+
+  test('beantwortet „Wo bekomme ich Matcha in Osnabrück?“ aus der Karte', () => {
+    const matcha = menuFaq(fallbackMenu).find((f) => f.q.includes('Matcha'));
+    expect(matcha?.a).toContain('Augustenburger Str. 4, Osnabrück');
+    expect(matcha?.a).toContain('Matcha Latte für 4,50 €');
+    expect(menuFaq([])).toEqual([]);
   });
 });

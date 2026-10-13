@@ -1,9 +1,22 @@
 import type { InstagramFeed } from './instagram/types';
-import { formatPrice, type MenuSection } from './menu';
+import { faqFor, formatPrice, type MenuSection } from './menu';
+import { openStatus } from './open-status';
 import { groupByDay, type OpeningHours, specialLines } from './opening-hours';
-import { faq, fullAddress, site } from './site';
+import { fullAddress, site } from './site';
 
-function hoursBlock(hours: OpeningHours | null) {
+const stampFormat = new Intl.DateTimeFormat('de-DE', {
+  dateStyle: 'full',
+  timeStyle: 'short',
+  timeZone: 'Europe/Berlin',
+});
+
+/** „Hat das Café gerade geöffnet?“ beantworten können, ohne selbst zu rechnen */
+function statusLine(hours: OpeningHours, now: Date) {
+  const { label } = openStatus(hours.current ?? hours.regular, now);
+  return `Stand beim Abruf (${stampFormat.format(now)} Uhr, Osnabrücker Zeit): ${label}.`;
+}
+
+function hoursBlock(hours: OpeningHours | null, now: Date) {
   if (!hours?.regular.length) {
     return `Aktuelle Öffnungszeiten: ${site.googleMapsUrl}`;
   }
@@ -13,6 +26,8 @@ function hoursBlock(hours: OpeningHours | null) {
   );
   const special = specialLines(hours.special).map((line) => `- ${line}`);
   return [
+    statusLine(hours, now),
+    '',
     ...week,
     ...(special.length ? ['', 'Abweichende Zeiten:', '', ...special] : []),
   ].join('\n');
@@ -24,7 +39,7 @@ const dateFormat = new Intl.DateTimeFormat('de-DE', {
 });
 
 /** Kurzfassung nach https://llmstxt.org */
-export function llmsTxt(hours: OpeningHours | null) {
+export function llmsTxt(hours: OpeningHours | null, now = new Date()) {
   return `# ${site.title}
 
 > ${site.description}
@@ -33,7 +48,7 @@ Café Flora ist ein Café in Osnabrück (Niedersachsen), geführt von ${site.own
 
 ## Öffnungszeiten
 
-${hoursBlock(hours)}
+${hoursBlock(hours, now)}
 
 ## Seiten
 
@@ -57,7 +72,8 @@ ${hoursBlock(hours)}
 export function llmsFullTxt(
   hours: OpeningHours | null,
   feed: InstagramFeed | null,
-  menu: MenuSection[]
+  menu: MenuSection[],
+  now = new Date()
 ) {
   const menuText = menu
     .map(
@@ -71,7 +87,9 @@ export function llmsFullTxt(
     )
     .join('\n\n');
 
-  const questions = faq.map((f) => `### ${f.q}\n\n${f.a}`).join('\n\n');
+  const questions = faqFor(menu)
+    .map((f) => `### ${f.q}\n\n${f.a}`)
+    .join('\n\n');
 
   const posts = (feed?.posts ?? [])
     .filter((p) => p.caption)
@@ -102,7 +120,7 @@ export function llmsFullTxt(
 
 ## Öffnungszeiten
 
-${hoursBlock(hours)}
+${hoursBlock(hours, now)}
 
 ## Speisekarte
 

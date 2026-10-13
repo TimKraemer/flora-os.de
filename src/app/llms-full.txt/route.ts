@@ -14,7 +14,8 @@ export async function GET() {
   return new Response(llmsFullTxt(hours, feed, menu), {
     headers: {
       'Content-Type': 'text/markdown; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600',
+      // kurz, weil der Öffnungsstatus darin steht
+      'Cache-Control': 'public, max-age=300',
     },
   });
 }

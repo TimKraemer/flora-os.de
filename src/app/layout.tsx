@@ -40,7 +40,7 @@ const nav = [
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.title} | Kaffee, Kuchen & Frühstück`,
+    default: `${site.title} | Kaffee, Matcha, Kuchen & Frühstück`,
     template: `%s | ${site.title}`,
   },
   description: site.description,

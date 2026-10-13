@@ -17,9 +17,10 @@ import { OpenStatusBadge } from '@/components/OpenStatusBadge';
 import { ReviewsSection } from '@/components/ReviewsSection';
 import { readReviews } from '@/lib/google/review-sync';
 import { readFeed } from '@/lib/instagram/store';
-import { formatPrice, getMenu, highlightsOf } from '@/lib/menu';
+import { faqFor, formatPrice, getMenu, highlightsOf } from '@/lib/menu';
+import { openStatus } from '@/lib/open-status';
 import { getOpeningHours, groupByDay, specialLines } from '@/lib/opening-hours';
-import { faq, fullAddress, site } from '@/lib/site';
+import { fullAddress, site } from '@/lib/site';
 import { cafeSchema } from '@/lib/structured-data';
 
 // Öffnungszeiten und Instagram-Feed ändern sich laufend, die Bewertungen werden
@@ -58,7 +59,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <JsonLd data={cafeSchema(hours)} />
+      <JsonLd data={cafeSchema(hours, faqFor(menu))} />
 
       {/* Hero */}
       <section
@@ -85,7 +86,10 @@ export default async function HomePage() {
           {hours && (
             <div className='mt-6'>
               {/* aktuelle Woche, damit Feiertage und Urlaub als geschlossen gelten */}
-              <OpenStatusBadge periods={hours.current ?? hours.regular} />
+              <OpenStatusBadge
+                periods={hours.current ?? hours.regular}
+                initial={openStatus(hours.current ?? hours.regular)}
+              />
             </div>
           )}
           <div className='mt-8 flex flex-wrap items-center gap-x-6 gap-y-3'>
@@ -282,7 +286,7 @@ export default async function HomePage() {
             <Flower className='size-8 text-berry' />
           </h2>
           <dl className='grid gap-6 md:grid-cols-2'>
-            {faq.map((f, i) => (
+            {faqFor(menu).map((f, i) => (
               <div
                 key={f.q}
                 className={`relative rounded-3xl bg-cream p-6 shadow-[var(--shadow-paper)] after:absolute after:-bottom-2.5 after:size-5 after:rotate-45 after:bg-cream ${i % 2 ? 'after:right-10' : 'after:left-10'}`}
