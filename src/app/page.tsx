@@ -273,7 +273,7 @@ export default async function HomePage() {
       <section
         id='faq'
         aria-labelledby='faq-title'
-        className='reveal mx-auto mt-24 grid max-w-6xl items-center gap-10 px-5 lg:grid-cols-[1fr_2fr]'
+        className='reveal below-fold mx-auto mt-24 grid max-w-6xl items-center gap-10 px-5 lg:grid-cols-[1fr_2fr]'
       >
         <LampAndCup className='mx-auto w-full max-w-xs lg:max-w-sm' />
         <div>

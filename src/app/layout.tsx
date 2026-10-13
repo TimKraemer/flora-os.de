@@ -127,7 +127,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           {children}
         </main>
 
-        <footer className='mt-24 text-white'>
+        <footer className='below-fold mt-24 text-white'>
           <Wave className='text-primary-dark' />
           <div className='bg-primary-dark px-5 pt-10 pb-14'>
             <div className='mx-auto grid max-w-6xl gap-10 md:grid-cols-[1.4fr_1fr_1fr]'>

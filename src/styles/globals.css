@@ -94,6 +94,19 @@
   }
 }
 
+/*
+ * Rendert der Browser erst in der Nähe des sichtbaren Bereichs. Nur für FAQ und
+ * Footer: Dort laufen die SVG-Animationen (Dampf, Lampe), die beim Laden ein
+ * Viertel von Style und Layout kosten. Nicht für Abschnitte mit Sprungzielen
+ * davor, sonst landet /#zeiten wegen geschätzter Höhen daneben.
+ * Clip-Rand, damit Schatten und schräge Zettel nicht abgeschnitten werden.
+ */
+@utility below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 700px;
+  overflow-clip-margin: 2rem;
+}
+
 @utility section-title {
   @apply font-display text-4xl leading-none font-semibold text-primary md:text-5xl;
   letter-spacing: -0.02em;
