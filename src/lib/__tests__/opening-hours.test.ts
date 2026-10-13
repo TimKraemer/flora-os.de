@@ -121,12 +121,12 @@ describe('Öffnungsstatus', () => {
   });
   test('nach Feierabend mit Ruhetag dazwischen', () => {
     expect(at('2026-09-28T19:00:00+02:00')).toBe(
-      'Geschlossen, Mittwoch ab 09:30 Uhr'
+      'Jetzt geschlossen, öffnet Mittwoch um 09:30 Uhr'
     );
   });
   test('Ruhetag, morgen wieder offen', () => {
     expect(at('2026-09-29T12:00:00+02:00')).toBe(
-      'Geschlossen, morgen ab 09:30 Uhr'
+      'Jetzt geschlossen, öffnet morgen um 09:30 Uhr'
     );
   });
 });

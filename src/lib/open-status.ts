@@ -57,7 +57,10 @@ export function openStatus(periods: Period[], date = new Date()): OpenStatus {
     const next = periods.find((p) => p.day === (day + i) % 7);
     if (next) {
       const when = i === 1 ? 'morgen' : dayNames[next.day];
-      return { open: false, label: `Geschlossen, ${when} ab ${next.open} Uhr` };
+      return {
+        open: false,
+        label: `Jetzt geschlossen, öffnet ${when} um ${next.open} Uhr`,
+      };
     }
   }
   return { open: false, label: 'Geschlossen' };
