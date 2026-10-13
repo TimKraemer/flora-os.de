@@ -48,4 +48,8 @@ export const faq = [
     q: 'Kann ich etwas mitnehmen?',
     a: 'Ja, Kaffee und Speisen gibt es auch zum Mitnehmen.',
   },
+  {
+    q: 'Ist das Café rollstuhlgerecht?',
+    a: 'Leider nicht, am Eingang sind Stufen. Mit Rollstuhl kannst du aber draußen sitzen.',
+  },
 ] as const;
