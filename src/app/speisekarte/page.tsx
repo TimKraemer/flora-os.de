@@ -7,11 +7,11 @@ import {
   Donut,
   FileDown,
   GlassWater,
-  IceCreamCone,
   Leaf,
   type LucideIcon,
   Martini,
   Sandwich,
+  Snowflake,
   Soup,
   UtensilsCrossed,
 } from 'lucide-react';
@@ -40,12 +40,12 @@ const sectionColors = [
 // Nach Titel statt id, weil die ids aus Google anders gebildet werden („Heißes“ → hei-es).
 // Reihenfolge zählt: „Kaffee kalt“ vor „Kaffee“ und „Kaltes“.
 const sectionIcons: [RegExp, LucideIcon][] = [
-  [/kaffee.*kalt|eiskaffee/i, IceCreamCone],
+  [/kaffee.*kalt|eiskaffee/i, CupSoda],
   [/kaffee/i, Coffee],
-  [/kalt/i, GlassWater],
+  [/kalt/i, Snowflake],
   [/hei/i, Leaf],
   [/smoothie/i, Citrus],
-  [/limo|sprudel/i, CupSoda],
+  [/limo|sprudel/i, GlassWater],
   [/aperitif|spritz/i, Martini],
   [/bier/i, Beer],
   [/hunger|kuchen|süß/i, Croissant],
