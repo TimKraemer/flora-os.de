@@ -1,6 +1,22 @@
-import { FileDown } from 'lucide-react';
+import {
+  Beer,
+  Citrus,
+  Coffee,
+  Croissant,
+  CupSoda,
+  Donut,
+  FileDown,
+  GlassWater,
+  IceCreamCone,
+  Leaf,
+  type LucideIcon,
+  Martini,
+  Sandwich,
+  Soup,
+  UtensilsCrossed,
+} from 'lucide-react';
 import type { Metadata } from 'next';
-import { Flower, Squiggle } from '@/components/Doodles';
+import { Squiggle } from '@/components/Doodles';
 import { JsonLd } from '@/components/JsonLd';
 import { formatPrice, getMenu } from '@/lib/menu';
 import { getOpeningHours } from '@/lib/opening-hours';
@@ -20,6 +36,25 @@ const sectionColors = [
   'bg-berry-soft',
   'bg-butter-soft',
 ];
+
+// Nach Titel statt id, weil die ids aus Google anders gebildet werden („Heißes“ → hei-es).
+// Reihenfolge zählt: „Kaffee kalt“ vor „Kaffee“ und „Kaltes“.
+const sectionIcons: [RegExp, LucideIcon][] = [
+  [/kaffee.*kalt|eiskaffee/i, IceCreamCone],
+  [/kaffee/i, Coffee],
+  [/kalt/i, GlassWater],
+  [/hei/i, Leaf],
+  [/smoothie/i, Citrus],
+  [/limo|sprudel/i, CupSoda],
+  [/aperitif|spritz/i, Martini],
+  [/bier/i, Beer],
+  [/hunger|kuchen|süß/i, Croissant],
+  [/bagel/i, Donut],
+  [/panini|sandwich/i, Sandwich],
+  [/suppe/i, Soup],
+];
+const sectionIcon = (title: string) =>
+  sectionIcons.find(([re]) => re.test(title))?.[1] ?? UtensilsCrossed;
 
 // Die Karte kommt aus dem Google-Unternehmensprofil und kann sich jederzeit ändern.
 export const dynamic = 'force-dynamic';
@@ -63,55 +98,60 @@ export default async function Speisekarte() {
       </nav>
 
       <div className='mt-14 columns-1 gap-8 md:columns-2'>
-        {menu.map((section, i) => (
-          <section
-            key={section.id}
-            id={section.id}
-            aria-labelledby={`${section.id}-title`}
-            className={`reveal mb-8 break-inside-avoid scroll-mt-6 rounded-[1.5rem_1.25rem_1.6rem_1.1rem] p-6 shadow-[var(--shadow-paper)] md:p-8 ${sectionColors[i % sectionColors.length]}`}
-          >
-            <h2
-              id={`${section.id}-title`}
-              className='flex items-center gap-2 text-3xl font-semibold text-primary'
+        {menu.map((section, i) => {
+          const Icon = sectionIcon(section.title);
+          return (
+            <section
+              key={section.id}
+              id={section.id}
+              aria-labelledby={`${section.id}-title`}
+              className={`reveal mb-8 break-inside-avoid scroll-mt-6 rounded-[1.5rem_1.25rem_1.6rem_1.1rem] p-6 shadow-[var(--shadow-paper)] md:p-8 ${sectionColors[i % sectionColors.length]}`}
             >
-              {section.title}
-              {i % 3 === 0 && <Flower className='size-6 text-berry' />}
-            </h2>
-            <ul className='mt-5 space-y-4'>
-              {section.items.map((item) => (
-                <li key={item.name}>
-                  <div className='flex items-baseline gap-2'>
-                    <h3 className='font-sans text-lg font-semibold'>
-                      {item.name}
-                    </h3>
-                    {item.diet && (
-                      <span className='rounded-md bg-white/70 px-1.5 text-xs font-semibold text-matcha-dark'>
-                        {item.diet}
+              <h2
+                id={`${section.id}-title`}
+                className='flex items-center gap-2 text-3xl font-semibold text-primary'
+              >
+                <Icon className='size-7 shrink-0 text-berry-dark' aria-hidden />
+                {section.title}
+              </h2>
+              <ul className='mt-5 space-y-4'>
+                {section.items.map((item) => (
+                  <li key={item.name}>
+                    <div className='flex items-baseline gap-2'>
+                      <h3 className='font-sans text-lg font-semibold'>
+                        {item.name}
+                      </h3>
+                      {item.diet && (
+                        <span className='rounded-md bg-white/70 px-1.5 text-xs font-semibold text-matcha-dark'>
+                          {item.diet}
+                        </span>
+                      )}
+                      <span
+                        aria-hidden
+                        className='mb-1 flex-1 border-b-2 border-dotted border-ink/20'
+                      />
+                      <span className='shrink-0 font-display text-lg font-semibold whitespace-nowrap text-primary'>
+                        {formatPrice(item.price)}
                       </span>
+                    </div>
+                    {(item.description || item.size) && (
+                      <p className='mt-0.5 text-[0.95rem] text-ink/75'>
+                        {[item.description, item.size]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </p>
                     )}
-                    <span
-                      aria-hidden
-                      className='mb-1 flex-1 border-b-2 border-dotted border-ink/20'
-                    />
-                    <span className='shrink-0 font-display text-lg font-semibold whitespace-nowrap text-primary'>
-                      {formatPrice(item.price)}
-                    </span>
-                  </div>
-                  {(item.description || item.size) && (
-                    <p className='mt-0.5 text-[0.95rem] text-ink/75'>
-                      {[item.description, item.size]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ul>
-            {section.note && (
-              <p className='mt-5 text-sm text-ink/75 italic'>{section.note}</p>
-            )}
-          </section>
-        ))}
+                  </li>
+                ))}
+              </ul>
+              {section.note && (
+                <p className='mt-5 text-sm text-ink/75 italic'>
+                  {section.note}
+                </p>
+              )}
+            </section>
+          );
+        })}
       </div>
 
       <p className='mt-6 text-sm text-ink/75'>
