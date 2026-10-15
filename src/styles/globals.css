@@ -34,6 +34,49 @@
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* Jahreszeiten: das Skript im Layout setzt data-season, Frühling ist @theme oben.
+   Wie in der Speisekarten-Vorlage: heller Pastellgrund, Muster ton-in-ton eine Stufe dunkler.
+   Nur helle Flächen und Akzente wechseln; Logo-Blau, Tinte und die -dark-Töne für
+   Text bleiben, damit die Kontraste stimmen. */
+:root[data-season="sommer"] {
+  --color-blush: #fff4e6;
+  --color-petal: #fde2c4;
+  --color-apricot: #f59a5c;
+  --color-apricot-soft: #fedcc2;
+  --color-matcha: #86b05a;
+  --color-matcha-soft: #e3f0d2;
+  --color-berry: #e66f8c;
+  --color-berry-soft: #fcd9e2;
+  --color-butter: #f7cf5a;
+  --color-butter-soft: #fcefc4;
+}
+
+:root[data-season="herbst"] {
+  --color-blush: #fbf0e4;
+  --color-petal: #f6e3cf;
+  --color-apricot: #e08a4f;
+  --color-apricot-soft: #f8dcc3;
+  --color-matcha: #9a9a4a;
+  --color-matcha-soft: #ebe9cf;
+  --color-berry: #c0645a;
+  --color-berry-soft: #f6dfd8;
+  --color-butter: #e3b54f;
+  --color-butter-soft: #f7e6bb;
+}
+
+:root[data-season="winter"] {
+  --color-blush: #f1f3f6;
+  --color-petal: #dfe5ee;
+  --color-apricot: #e2a07f;
+  --color-apricot-soft: #f6e2d8;
+  --color-matcha: #6f9a86;
+  --color-matcha-soft: #dde9e3;
+  --color-berry: #c25b72;
+  --color-berry-soft: #f2dbe1;
+  --color-butter: #d9c58e;
+  --color-butter-soft: #f1ead4;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -42,14 +85,24 @@
 
   body {
     @apply bg-blush font-sans text-ink antialiased;
-    background-image: url("/svg/flora.svg");
-    background-size: 1100px;
+    position: relative;
+  }
+
+  /* Blütenmuster als Maske, damit es die Farbe der Jahreszeit annimmt */
+  body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--color-petal);
+    mask: url("/svg/flora.svg") 0 0 / 1100px repeat;
   }
 
   @media (min-width: 768px) {
-    body {
-      background-size: 1500px;
-      background-attachment: fixed;
+    body::before {
+      position: fixed;
+      mask-size: 1500px;
     }
   }
 

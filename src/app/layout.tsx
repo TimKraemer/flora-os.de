@@ -89,9 +89,38 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// Januar bis Dezember
+const seasons = [
+  'winter',
+  'winter',
+  'fruehling',
+  'fruehling',
+  'fruehling',
+  'sommer',
+  'sommer',
+  'sommer',
+  'herbst',
+  'herbst',
+  'herbst',
+  'winter',
+];
+
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang='de' className={`${figtree.variable} ${fraunces.variable}`}>
+    <html
+      lang='de'
+      className={`${figtree.variable} ${fraunces.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Vor dem ersten Zeichnen, sonst blitzt die Frühlingspalette auf */}
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: festes Skript ohne Nutzereingaben
+          dangerouslySetInnerHTML={{
+            __html: `document.documentElement.dataset.season=${JSON.stringify(seasons)}[new Date().getMonth()]`,
+          }}
+        />
+      </head>
       <body className='grain flex min-h-dvh flex-col'>
         <a
           href='#inhalt'
