@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { llmsFullTxt, llmsTxt } from '../llms';
-import { fallbackMenu, menuFaq } from '../menu';
+import { fallbackMenu } from '../menu';
 
 const hours = {
   regular: [{ day: 1, open: '09:30', close: '18:00' }],
@@ -58,13 +58,5 @@ describe('Fragen an KI-Assistenten', () => {
     expect(text).toContain(
       'Stand beim Abruf (Montag, 28. September 2026 um 10:00 Uhr, Osnabrücker Zeit): Jetzt geöffnet bis 18:00 Uhr.'
     );
-  });
-
-  test('beantwortet „Wo bekomme ich Matcha in Osnabrück?“ aus der Karte', () => {
-    const matcha = menuFaq(fallbackMenu).find((f) => f.q.includes('Matcha'));
-    expect(matcha?.a).toContain('Augustenburger Str. 4, Osnabrück');
-    expect(matcha?.a).toContain('Matcha Latte');
-    expect(matcha?.a).not.toContain('€');
-    expect(menuFaq([])).toEqual([]);
   });
 });

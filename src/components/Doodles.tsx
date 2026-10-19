@@ -85,7 +85,7 @@ export function LampAndCup(props: SVGProps<SVGSVGElement>) {
           <path
             key={i}
             d={`M${236 + i * 18} 186c-8-10 8-18 0-30`}
-            stroke='#607da5'
+            stroke='#523f88'
             strokeOpacity='.55'
             strokeWidth='4'
             strokeLinecap='round'
@@ -164,7 +164,7 @@ export function MiniMap(props: SVGProps<SVGSVGElement>) {
       <g transform='translate(70 44)'>
         <path
           d='M18 48C6 32 0 24 0 16a18 18 0 0 1 36 0c0 8-6 16-18 32z'
-          fill='#607da5'
+          fill='#523f88'
         />
         <circle cx='18' cy='16' r='7' fill='#fdf1ed' />
       </g>

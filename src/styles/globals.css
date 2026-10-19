@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
-/* Farben aus dem Café: Logo-Blau, Pilzlampen-Apricot, Matcha, Beerenrosa, helles Holz */
+/* Farben aus dem Café: Logo-Lila, Pilzlampen-Apricot, Matcha, Beerenrosa, helles Holz */
 @theme {
-  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-europa), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-confiteria), cursive;
 
-  /* Logo-Blau; für Text und Buttons zu hell (Kontrast unter 4,5:1), dafür primary */
-  --color-brand: #607da5;
-  --color-primary: #4a6489;
-  --color-primary-dark: #3b5070;
+  /* Logo-Lila aus Maries Logo-Datei, dunkel genug auch für Text und Buttons */
+  --color-brand: #523f88;
+  --color-primary: #523f88;
+  --color-primary-dark: #40306b;
   --color-blush: #fdf1ed;
   --color-petal: #fae1d8;
   --color-cream: #fffaf3;
@@ -36,7 +36,7 @@
 
 /* Jahreszeiten: das Skript im Layout setzt data-season, Frühling ist @theme oben.
    Wie in der Speisekarten-Vorlage: heller Pastellgrund, Muster ton-in-ton eine Stufe dunkler.
-   Nur helle Flächen und Akzente wechseln; Logo-Blau, Tinte und die -dark-Töne für
+   Nur helle Flächen und Akzente wechseln; Logo-Lila, Tinte und die -dark-Töne für
    Text bleiben, damit die Kontraste stimmen. */
 :root[data-season="sommer"] {
   --color-blush: #fff4e6;
@@ -86,6 +86,8 @@
   body {
     @apply bg-blush font-sans text-ink antialiased;
     position: relative;
+    /* Beide Schriften haben nur einen Schnitt; kein künstliches Kursiv oder Fett */
+    font-synthesis: none;
   }
 
   /* Blütenmuster als Maske, damit es die Farbe der Jahreszeit annimmt */

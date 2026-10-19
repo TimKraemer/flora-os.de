@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { Figtree } from 'next/font/google';
 import localFont from 'next/font/local';
 import Link from 'next/link';
 import { Flower, Wave } from '@/components/Doodles';
@@ -9,24 +8,20 @@ import { Phone } from '@/components/Phone';
 import { fullAddress, site } from '@/lib/site';
 import '@/styles/globals.css';
 
-// next/font lädt die Schrift beim Build und liefert sie von flora-os.de aus.
-// Besucher stellen keine Verbindung zu Google her.
-const figtree = Figtree({
-  subsets: ['latin'],
+// Schriften aus Maries Gestaltung, lizenziert und von flora-os.de ausgeliefert.
+// Europa gibt es nur in Bold: auch Fließtext ist fett, so wie in ihren Entwürfen.
+const europa = localFont({
+  src: '../../assets/fonts/Europa-Bold.woff2',
+  weight: '700',
   display: 'swap',
-  variable: '--font-figtree',
+  variable: '--font-europa',
 });
-// Fraunces (Google Fonts, latin) mit festem SOFT 100 / WONK 1 / opsz 48 und Gewicht
-// 400–700, erzeugt mit fontTools varLib.instancer: 76 statt 270 KB.
-const fraunces = localFont({
-  src: [
-    { path: '../../assets/fonts/Fraunces-Soft.woff2', style: 'normal' },
-    { path: '../../assets/fonts/Fraunces-Soft-Italic.woff2', style: 'italic' },
-  ],
-  weight: '400 700',
+// Confiteria Script Black für Überschriften, mit fontTools auf Latin-1 gekürzt
+const confiteria = localFont({
+  src: '../../assets/fonts/ConfiteriaScript-Black.woff2',
+  weight: '900',
   display: 'swap',
-  variable: '--font-fraunces',
-  adjustFontFallback: 'Times New Roman',
+  variable: '--font-confiteria',
   // Vorab geladen verdrängt sie auf dem Handy den Fließtext (LCP); lädt über das CSS.
   preload: false,
 });
@@ -109,7 +104,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang='de'
-      className={`${figtree.variable} ${fraunces.variable}`}
+      className={`${europa.variable} ${confiteria.variable}`}
       suppressHydrationWarning
     >
       <head>

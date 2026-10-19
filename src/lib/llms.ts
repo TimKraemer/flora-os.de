@@ -1,8 +1,8 @@
 import type { InstagramFeed } from './instagram/types';
-import { faqFor, type MenuSection } from './menu';
+import type { MenuSection } from './menu';
 import { openStatus } from './open-status';
 import { groupByDay, type OpeningHours, specialLines } from './opening-hours';
-import { fullAddress, site } from './site';
+import { faq, fullAddress, site } from './site';
 
 const stampFormat = new Intl.DateTimeFormat('de-DE', {
   dateStyle: 'full',
@@ -86,9 +86,7 @@ export function llmsFullTxt(
     )
     .join('\n\n');
 
-  const questions = faqFor(menu)
-    .map((f) => `### ${f.q}\n\n${f.a}`)
-    .join('\n\n');
+  const questions = faq.map((f) => `### ${f.q}\n\n${f.a}`).join('\n\n');
 
   const posts = (feed?.posts ?? [])
     .filter((p) => p.caption)

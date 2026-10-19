@@ -1,6 +1,5 @@
 import { menuFile, type StoredMenu } from '@/lib/google/menu-sync';
 import { readJson } from '@/lib/json-store';
-import { faq, site } from '@/lib/site';
 
 /**
  * Die Speisekarte kommt aus dem Google-Unternehmensprofil (src/lib/google).
@@ -437,32 +436,3 @@ export async function getMenu(): Promise<MenuSection[]> {
   const stored = await readJson<StoredMenu>(menuFile());
   return stored?.sections.length ? stored.sections : fallbackMenu;
 }
-
-/**
- * Fragen, wie Leute sie Suchmaschinen und KI-Assistenten stellen. Die Antwort
- * nennt die Getränke aus der aktuellen Karte; fehlt etwas, entfällt die Frage.
- */
-const menuQuestions = [
-  { q: 'Wo bekomme ich Matcha in Osnabrück?', match: /matcha/i },
-  { q: 'Wo gibt es Chai Latte in Osnabrück?', match: /chai/i },
-];
-
-const listFormat = new Intl.ListFormat('de-DE', { type: 'conjunction' });
-
-export function menuFaq(menu: MenuSection[]) {
-  const items = menu.flatMap((s) => s.items);
-  return menuQuestions.flatMap(({ q, match }) => {
-    const found = items.filter((item) => match.test(item.name));
-    if (found.length === 0) return [];
-    const list = listFormat.format(found.map((item) => item.name));
-    return [
-      {
-        q,
-        a: `Im ${site.name} im Katharinenviertel, ${site.address.street}, ${site.address.city}. Auf der Karte stehen ${list}.`,
-      },
-    ];
-  });
-}
-
-/** Feste FAQ aus site.ts plus die Fragen zur aktuellen Karte */
-export const faqFor = (menu: MenuSection[]) => [...faq, ...menuFaq(menu)];

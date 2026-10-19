@@ -70,7 +70,7 @@ function cafeNode(hours: OpeningHours | null): CafeOrCoffeeShop {
 
 export function cafeSchema(
   hours: OpeningHours | null,
-  questions: { q: string; a: string }[]
+  questions: readonly { q: string; a: string }[]
 ): Graph {
   const faqPage: FAQPage = {
     '@type': 'FAQPage',

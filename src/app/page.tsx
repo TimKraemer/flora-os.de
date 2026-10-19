@@ -17,10 +17,10 @@ import { OpenStatusBadge } from '@/components/OpenStatusBadge';
 import { ReviewsSection } from '@/components/ReviewsSection';
 import { readReviews } from '@/lib/google/review-sync';
 import { readFeed } from '@/lib/instagram/store';
-import { faqFor, getMenu, highlightsOf } from '@/lib/menu';
+import { getMenu, highlightsOf } from '@/lib/menu';
 import { openStatus } from '@/lib/open-status';
 import { getOpeningHours, groupByDay, specialLines } from '@/lib/opening-hours';
-import { fullAddress, site } from '@/lib/site';
+import { faq, fullAddress, site } from '@/lib/site';
 import { cafeSchema } from '@/lib/structured-data';
 
 // Öffnungszeiten und Instagram-Feed ändern sich laufend, die Bewertungen werden
@@ -59,7 +59,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <JsonLd data={cafeSchema(hours, faqFor(menu))} />
+      <JsonLd data={cafeSchema(hours, faq)} />
 
       {/* Hero */}
       <section
@@ -70,7 +70,7 @@ export default async function HomePage() {
           <Greeting />
           <h1
             id='intro-title'
-            className='mt-2 text-5xl leading-[0.95] font-semibold tracking-tight text-primary sm:text-6xl lg:text-7xl'
+            className='mt-2 text-[2.6rem] leading-[0.95] font-semibold text-primary sm:text-6xl md:text-[2.75rem] lg:text-6xl xl:text-7xl'
           >
             Café Flora
             <span className='relative mt-1 block w-fit text-apricot-dark italic'>
@@ -275,7 +275,7 @@ export default async function HomePage() {
             <Flower className='size-8 text-berry' />
           </h2>
           <dl className='grid gap-6 md:grid-cols-2'>
-            {faqFor(menu).map((f, i) => (
+            {faq.map((f, i) => (
               <div
                 key={f.q}
                 className={`relative rounded-3xl bg-cream p-6 shadow-[var(--shadow-paper)] after:absolute after:-bottom-2.5 after:size-5 after:rotate-45 after:bg-cream ${i % 2 ? 'after:right-10' : 'after:left-10'}`}
