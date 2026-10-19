@@ -46,7 +46,8 @@ describe('llms.txt', () => {
     );
     expect(text).toContain('## Neueste Instagram-Beiträge');
     expect(text).toContain('Neuer Kuchen: Zitrone-Mohn');
-    expect(text).toContain('- Flat White: 4,50 €');
+    expect(text).toContain('- Flat White: zwei Espressi');
+    expect(text).not.toContain('4,50 €');
   });
 });
 
@@ -62,7 +63,8 @@ describe('Fragen an KI-Assistenten', () => {
   test('beantwortet „Wo bekomme ich Matcha in Osnabrück?“ aus der Karte', () => {
     const matcha = menuFaq(fallbackMenu).find((f) => f.q.includes('Matcha'));
     expect(matcha?.a).toContain('Augustenburger Str. 4, Osnabrück');
-    expect(matcha?.a).toContain('Matcha Latte für 4,50 €');
+    expect(matcha?.a).toContain('Matcha Latte');
+    expect(matcha?.a).not.toContain('€');
     expect(menuFaq([])).toEqual([]);
   });
 });

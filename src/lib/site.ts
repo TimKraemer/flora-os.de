@@ -20,7 +20,6 @@ export const site = {
     username: 'cafe_flora_osnabrueck',
     url: 'https://www.instagram.com/cafe_flora_osnabrueck/',
   },
-  menuPdf: '/Speisekarte.pdf',
   priceRange: '€',
   themeColor: '#607da5',
 } as const;
@@ -51,5 +50,13 @@ export const faq = [
   {
     q: 'Ist das Café rollstuhlgerecht?',
     a: 'Leider nicht, am Eingang sind Stufen. Mit Rollstuhl kannst du aber draußen sitzen.',
+  },
+  {
+    q: 'Wie kann ich das Café Flora am besten kontaktieren?',
+    a: `Du erreichst uns am besten per E-Mail an ${site.email}.`,
+  },
+  {
+    q: 'Gibt es bei euch Gutscheine?',
+    a: 'Ja, vor Ort bekommst du Gutscheine über 10 €, 15 €, 20 € oder 25 €. Online gibt es sie leider noch nicht.',
   },
 ] as const;

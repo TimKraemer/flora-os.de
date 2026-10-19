@@ -33,8 +33,6 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   typedRoutes: true,
-  // Vorlage und Schriften für die erzeugte Speisekarte (src/lib/menu-pdf.ts)
-  outputFileTracingIncludes: { '/Speisekarte.pdf': ['./assets/**/*'] },
   turbopack: { root: import.meta.dirname },
   async headers() {
     return [
@@ -51,6 +49,12 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         has: [{ type: 'host', value: 'www.flora-os.de' }],
         destination: 'https://flora-os.de/:path*',
+        permanent: true,
+      },
+      // PDF mit Preisen ist offline (Wunsch der Inhaberin), Links landen auf der Karte
+      {
+        source: '/Speisekarte.pdf',
+        destination: '/speisekarte',
         permanent: true,
       },
     ];

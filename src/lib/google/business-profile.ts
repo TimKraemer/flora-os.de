@@ -248,7 +248,6 @@ export function toMenuSections(
           .map((o) => price(o.attributes?.price))
           .filter((p) => p !== undefined);
         const prices = [base, ...optionPrices].filter((p) => p !== undefined);
-        if (prices.length === 0) return [];
         const { description, size, note } = splitDescription(
           item.labels[0].description
         );

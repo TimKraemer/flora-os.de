@@ -5,7 +5,6 @@ import {
   Croissant,
   CupSoda,
   Donut,
-  FileDown,
   GlassWater,
   Leaf,
   type LucideIcon,
@@ -18,15 +17,14 @@ import {
 import type { Metadata } from 'next';
 import { Squiggle } from '@/components/Doodles';
 import { JsonLd } from '@/components/JsonLd';
-import { formatPrice, getMenu } from '@/lib/menu';
+import { getMenu } from '@/lib/menu';
 import { getOpeningHours } from '@/lib/opening-hours';
-import { site } from '@/lib/site';
 import { menuSchema } from '@/lib/structured-data';
 
 export const metadata: Metadata = {
   title: 'Speisekarte',
   description:
-    'Speisekarte von Café Flora in Osnabrück mit Preisen: Kaffee, Matcha, Chai, Smoothies, Aperitif, Bananenbrot, Kuchen, Bagels, Panini und Tagessuppe.',
+    'Speisekarte von Café Flora in Osnabrück: Kaffee, Matcha, Chai, Smoothies, Aperitif, Bananenbrot, Kuchen, Bagels, Panini und Tagessuppe.',
   alternates: { canonical: '/speisekarte' },
 };
 
@@ -65,21 +63,12 @@ export default async function Speisekarte() {
     <div className='mx-auto max-w-6xl px-5 pt-12'>
       <JsonLd data={menuSchema(menu, hours)} />
 
-      <header className='flex flex-wrap items-end justify-between gap-6'>
-        <div>
-          <p className='kicker'>Was darf’s sein?</p>
-          <h1 className='relative w-fit text-5xl leading-none font-semibold text-primary md:text-6xl'>
-            Speisekarte
-            <Squiggle className='absolute -bottom-4 left-0 w-full text-apricot' />
-          </h1>
-        </div>
-        <a
-          href={site.menuPdf}
-          className='btn border-2 border-primary text-primary hover:bg-primary hover:text-white'
-        >
-          <FileDown className='size-5' aria-hidden />
-          Als PDF
-        </a>
+      <header>
+        <p className='kicker'>Was darf’s sein?</p>
+        <h1 className='relative w-fit text-5xl leading-none font-semibold text-primary md:text-6xl'>
+          Speisekarte
+          <Squiggle className='absolute -bottom-4 left-0 w-full text-apricot' />
+        </h1>
       </header>
 
       <nav aria-label='Abschnitte der Speisekarte' className='mt-12'>
@@ -126,13 +115,6 @@ export default async function Speisekarte() {
                           {item.diet}
                         </span>
                       )}
-                      <span
-                        aria-hidden
-                        className='mb-1 flex-1 border-b-2 border-dotted border-ink/20'
-                      />
-                      <span className='shrink-0 font-display text-lg font-semibold whitespace-nowrap text-primary'>
-                        {formatPrice(item.price)}
-                      </span>
                     </div>
                     {(item.description || item.size) && (
                       <p className='mt-0.5 text-[0.95rem] text-ink/75'>
@@ -155,8 +137,6 @@ export default async function Speisekarte() {
       </div>
 
       <p className='mt-6 text-sm text-ink/75'>
-        Alle Preise in Euro inklusive Mehrwertsteuer. Bei mehreren Preisen gilt
-        die Reihenfolge der Beschreibung (z. B. Espresso einfach / doppelt).
         Fragen zu Allergenen beantworten wir dir gern vor Ort.
       </p>
     </div>

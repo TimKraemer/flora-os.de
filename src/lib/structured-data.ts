@@ -99,7 +99,7 @@ export function cafeSchema(
   };
 }
 
-/** Speisekarte mit Preisen, verknüpft mit dem Café von der Startseite. */
+/** Speisekarte ohne Preise (Wunsch der Inhaberin), verknüpft mit dem Café von der Startseite. */
 export function menuSchema(
   menu: MenuSection[],
   hours: OpeningHours | null
@@ -125,13 +125,6 @@ export function menuSchema(
               ? 'https://schema.org/VeganDiet'
               : 'https://schema.org/VegetarianDiet',
         }),
-        offers: (Array.isArray(item.price) ? item.price : [item.price]).map(
-          (price) => ({
-            '@type': 'Offer',
-            price: price.toFixed(2),
-            priceCurrency: 'EUR',
-          })
-        ),
       })),
     })),
   };

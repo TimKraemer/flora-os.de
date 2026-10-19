@@ -21,7 +21,7 @@ bun run dev
 | Was | Wo |
 | --- | --- |
 | Adresse, Telefon, E-Mail, FAQ | `src/lib/site.ts` |
-| Speisekarte mit Preisen (Seite `/speisekarte`, Startseite, llms-full.txt) | im Google-Unternehmensprofil (Speisekarte bearbeiten). Website und `/Speisekarte.pdf` übernehmen Änderungen innerhalb einer Stunde |
+| Speisekarte ohne Preise (Seite `/speisekarte`, Startseite, llms-full.txt) | im Google-Unternehmensprofil (Speisekarte bearbeiten). Die Website übernimmt Änderungen innerhalb einer Stunde. Preise zeigt sie bewusst nicht an (Wunsch von Marie) |
 | Öffnungszeiten | kommen aus Google Maps (Google-Unternehmensprofil pflegen) |
 | Impressum, Datenschutz | `src/app/impressum/page.tsx`, `src/app/datenschutz/page.tsx` |
 
@@ -57,9 +57,10 @@ Stories gibt Instagram nur an eingeloggte Nutzer heraus, deshalb fehlen sie.
 
 Der Server holt die Karte stündlich über die Google Business Profile
 API (`getFoodMenus`, Cloud-Projekt „flora-os“ im Konto tiekei22@gmail.com) und
-legt sie in `data/google/menu.json` ab. `/Speisekarte.pdf` wird daraus im
-Layout der InDesign-Vorlage erzeugt (`src/lib/menu-pdf.ts`, Vorlage und
-Schrift in `assets/`). Ohne Zugangsdaten oder vor dem ersten
+legt sie in `data/google/menu.json` ab. Einträge ohne Preis bleiben drin.
+`src/lib/menu-pdf.ts` kann daraus eine Druckfassung im Layout der
+InDesign-Vorlage erzeugen, wird seit Oktober 2026 aber nicht mehr
+ausgeliefert (`/Speisekarte.pdf` leitet auf `/speisekarte` um). Ohne Zugangsdaten oder vor dem ersten
 Abgleich gilt die Karte aus `src/lib/menu.ts`. Welche Gerichte auf der
 Startseite stehen, steht ebenfalls dort (`highlightNames`).
 

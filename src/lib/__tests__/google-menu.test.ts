@@ -83,8 +83,11 @@ describe('Speisekarte aus Google', () => {
     expect(sections[0].items[2].price).toBe(2.8);
   });
 
-  test('lässt Einträge ohne Preis weg und übernimmt vegan', () => {
-    expect(sections[0].items).toHaveLength(3);
+  test('behält Einträge ohne Preis und übernimmt vegan', () => {
+    expect(sections[0].items[3]).toMatchObject({
+      name: 'Ohne Preis',
+      price: [],
+    });
     expect(sections[1].items[0].diet).toBe('vegan');
   });
 

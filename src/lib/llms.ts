@@ -1,5 +1,5 @@
 import type { InstagramFeed } from './instagram/types';
-import { faqFor, formatPrice, type MenuSection } from './menu';
+import { faqFor, type MenuSection } from './menu';
 import { openStatus } from './open-status';
 import { groupByDay, type OpeningHours, specialLines } from './opening-hours';
 import { fullAddress, site } from './site';
@@ -53,9 +53,8 @@ ${hoursBlock(hours, now)}
 ## Seiten
 
 - [Startseite](${site.url}/): Karte, Öffnungszeiten, Anfahrt, aktuelle Instagram-Beiträge und häufige Fragen
-- [Speisekarte](${site.url}/speisekarte): alle Getränke und Speisen mit Preisen
-- [Speisekarte (PDF)](${site.url}${site.menuPdf}): dieselbe Karte zum Ausdrucken
-- [Ausführliche Fassung für KI-Assistenten](${site.url}/llms-full.txt): Karte mit Preisen, FAQ und neueste Instagram-Beiträge
+- [Speisekarte](${site.url}/speisekarte): alle Getränke und Speisen
+- [Ausführliche Fassung für KI-Assistenten](${site.url}/llms-full.txt): Karte, FAQ und neueste Instagram-Beiträge
 
 ## Weitere Quellen
 
@@ -81,7 +80,7 @@ export function llmsFullTxt(
         `### ${section.title}\n\n${section.items
           .map((item) => {
             const extras = [item.size, item.diet].filter(Boolean).join(', ');
-            return `- ${item.name}: ${formatPrice(item.price)}${extras ? ` (${extras})` : ''}${item.description ? `. ${item.description}` : ''}`;
+            return `- ${item.name}${extras ? ` (${extras})` : ''}${item.description ? `: ${item.description}` : ''}`;
           })
           .join('\n')}${section.note ? `\n\n${section.note}` : ''}`
     )
@@ -124,7 +123,7 @@ ${hoursBlock(hours, now)}
 
 ## Speisekarte
 
-Preise in Euro inklusive Mehrwertsteuer. Als Webseite: ${site.url}/speisekarte, als PDF: ${site.url}${site.menuPdf}. Kaffee und Smoothies gibt es auch mit Oatly-Hafermilch.
+Als Webseite: ${site.url}/speisekarte. Kaffee und Smoothies gibt es auch mit Oatly-Hafermilch.
 
 ${menuText}
 

@@ -111,7 +111,7 @@ jobs:
 
       - name: Produktion erreichbar?
         run: |
-          for url in https://flora-os.de/api/health https://flora-os.de/ https://flora-os.de/llms.txt https://flora-os.de/Speisekarte.pdf; do
+          for url in https://flora-os.de/api/health https://flora-os.de/ https://flora-os.de/llms.txt; do
             curl -fsS --retry 5 --retry-delay 3 -o /dev/null -w "$url → %{http_code}\n" "$url"
           done
 
@@ -122,4 +122,4 @@ jobs:
         run: |
           curl -sS -o /dev/null -w "IndexNow → %{http_code}\n" -X POST https://api.indexnow.org/indexnow \
             -H 'Content-Type: application/json; charset=utf-8' \
-            -d '{"host":"flora-os.de","key":"66dd907a7152c4ccccede4912df48248","keyLocation":"https://flora-os.de/66dd907a7152c4ccccede4912df48248.txt","urlList":["https://flora-os.de/","https://flora-os.de/speisekarte","https://flora-os.de/Speisekarte.pdf","https://flora-os.de/llms.txt","https://flora-os.de/llms-full.txt"]}' || true
+            -d '{"host":"flora-os.de","key":"66dd907a7152c4ccccede4912df48248","keyLocation":"https://flora-os.de/66dd907a7152c4ccccede4912df48248.txt","urlList":["https://flora-os.de/","https://flora-os.de/speisekarte","https://flora-os.de/llms.txt","https://flora-os.de/llms-full.txt"]}' || true

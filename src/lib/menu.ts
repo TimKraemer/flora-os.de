@@ -409,20 +409,11 @@ export const fallbackMenu: MenuSection[] = [
   },
 ];
 
-const euro = new Intl.NumberFormat('de-DE', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-export function formatPrice(price: MenuItem['price']) {
-  const prices = Array.isArray(price) ? price : [price];
-  return `${prices.map((p) => euro.format(p)).join(' / ')} €`;
-}
-
 /** Lieblinge für die Startseite, gesucht nach Namen (Google liefert keine Markierung). */
 const highlightNames = [
   'flat white',
   'iced matcha berry latte',
+  'iced strawberry matcha latte',
   'chai latte',
   'gelber smoothie',
   'espresso tini',
@@ -449,32 +440,25 @@ export async function getMenu(): Promise<MenuSection[]> {
 
 /**
  * Fragen, wie Leute sie Suchmaschinen und KI-Assistenten stellen. Die Antwort
- * nennt die Getränke mit Preisen aus der aktuellen Karte; fehlt etwas, entfällt die Frage.
+ * nennt die Getränke aus der aktuellen Karte; fehlt etwas, entfällt die Frage.
  */
 const menuQuestions = [
   { q: 'Wo bekomme ich Matcha in Osnabrück?', match: /matcha/i },
   { q: 'Wo gibt es Chai Latte in Osnabrück?', match: /chai/i },
-  {
-    q: 'Wo gibt es Bananenbrot in Osnabrück?',
-    match: /bananenbrot/i,
-    extra: ' Wir backen es nach Hausrezept, pur ist es vegan.',
-  },
 ];
 
 const listFormat = new Intl.ListFormat('de-DE', { type: 'conjunction' });
 
 export function menuFaq(menu: MenuSection[]) {
   const items = menu.flatMap((s) => s.items);
-  return menuQuestions.flatMap(({ q, match, extra }) => {
+  return menuQuestions.flatMap(({ q, match }) => {
     const found = items.filter((item) => match.test(item.name));
     if (found.length === 0) return [];
-    const list = listFormat.format(
-      found.map((item) => `${item.name} für ${formatPrice(item.price)}`)
-    );
+    const list = listFormat.format(found.map((item) => item.name));
     return [
       {
         q,
-        a: `Im ${site.name} im Katharinenviertel, ${site.address.street}, ${site.address.city}. Auf der Karte stehen ${list}.${extra ?? ''}`,
+        a: `Im ${site.name} im Katharinenviertel, ${site.address.street}, ${site.address.city}. Auf der Karte stehen ${list}.`,
       },
     ];
   });

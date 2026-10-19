@@ -17,7 +17,7 @@ import { OpenStatusBadge } from '@/components/OpenStatusBadge';
 import { ReviewsSection } from '@/components/ReviewsSection';
 import { readReviews } from '@/lib/google/review-sync';
 import { readFeed } from '@/lib/instagram/store';
-import { faqFor, formatPrice, getMenu, highlightsOf } from '@/lib/menu';
+import { faqFor, getMenu, highlightsOf } from '@/lib/menu';
 import { openStatus } from '@/lib/open-status';
 import { getOpeningHours, groupByDay, specialLines } from '@/lib/opening-hours';
 import { fullAddress, site } from '@/lib/site';
@@ -158,28 +158,17 @@ export default async function HomePage() {
                       {item.description}
                     </p>
                   )}
-                  <p className='mt-4 font-display text-xl font-semibold text-primary'>
-                    {formatPrice(item.price)}
-                  </p>
                 </li>
               ))}
             </ul>
 
-            <div className='mt-12 flex flex-wrap items-center gap-x-6 gap-y-3'>
-              <Link
-                href='/speisekarte'
-                className='btn bg-primary text-white hover:bg-primary-dark'
-              >
-                Ganze Karte mit Preisen
-                <ArrowRight className='size-4' aria-hidden />
-              </Link>
-              <a
-                href={site.menuPdf}
-                className='font-semibold text-primary underline decoration-wavy decoration-apricot underline-offset-4'
-              >
-                Speisekarte als PDF
-              </a>
-            </div>
+            <Link
+              href='/speisekarte'
+              className='btn mt-12 bg-primary text-white hover:bg-primary-dark'
+            >
+              Ganze Karte
+              <ArrowRight className='size-4' aria-hidden />
+            </Link>
           </div>
         </div>
         <Wave className='text-cream' flip />
