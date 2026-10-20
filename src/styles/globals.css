@@ -167,8 +167,10 @@
   letter-spacing: -0.02em;
 }
 
+/* Kleine Überschrift über den Titeln: Europa in Versalien wie auf Maries Flyern,
+   die Script bleibt den großen Titeln vorbehalten */
 @utility kicker {
-  @apply font-display text-lg text-apricot-dark italic md:text-xl;
+  @apply font-sans text-sm tracking-[0.14em] text-apricot-dark uppercase md:text-base;
 }
 
 /* Papierzettel mit leichter Schräglage, richten sich beim Hovern auf */
